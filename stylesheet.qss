@@ -1,0 +1,54 @@
+/* StyleSheet pour l'application de gestion de vente */
+
+QMainWindow {
+    background-color: #F8FAFC;
+}
+
+QWidget {
+    font-family: Segoe UI, Arial;
+    font-size: 13px;
+    color: #111827;
+    background-color: #FFFFFF;
+}
+
+QPushButton {
+    border: 1px solid #E5E7EB;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 13px;
+    background-color: red;
+}
+
+QPushButton:hover {
+    background-color: #F8FAFC;
+}
+
+QPushButton:pressed {
+    background-color: #E5E7EB;
+}
+
+QPushButton:disabled {
+    color: #6B7280;
+    background-color: #F3F4F6;
+}
+
+#sidebar {
+    background-color: #1E293B;
+    color: white;
+}
+
+#sidebarButton {
+    background-color: transparent;
+    color: white;
+    border: none;
+    padding: 12px 16px;
+    font-size: 13px;
+}
+
+#sidebarButton:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+#sidebarButton:pressed {
+    background-color: rgba(255, 255, 255, 0.2);
+}
