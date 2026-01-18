@@ -1,0 +1,177 @@
+/* Dark Theme - Gestion Vente Matériel */
+
+* {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+/* === GLOBAL BACKGROUNDS === */
+QMainWindow {
+    background-color: #0f172a;
+}
+
+QDialog {
+    background-color: #0f172a;
+}
+
+QWidget {
+    background-color: #0f172a;
+    color: #f1f5f9;
+}
+
+QFrame {
+    background-color: transparent;
+    color: #f1f5f9;
+}
+
+/* === TABLES === */
+QTableWidget {
+    background-color: #1e293b;
+    color: #f1f5f9;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    gridline-color: #334155;
+}
+
+QTableWidget::item {
+    padding: 12px;
+    border: none;
+}
+
+QTableWidget::item:selected {
+    background-color: #334155;
+}
+
+QTableWidget::item:alternate {
+    background-color: #1a1f2e;
+}
+
+QHeaderView::section {
+    background-color: #0f172a;
+    color: #f1f5f9;
+    padding: 12px;
+    border: none;
+    border-bottom: 2px solid #334155;
+    font-weight: 600;
+}
+
+/* === BUTTONS === */
+QPushButton {
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: 600;
+}
+
+QPushButton:hover {
+    background-color: #2563eb;
+}
+
+QPushButton:pressed {
+    background-color: #1d4ed8;
+}
+
+QPushButton:disabled {
+    background-color: #334155;
+    color: #64748b;
+}
+
+/* === INPUTS === */
+QLineEdit, QTextEdit, QComboBox, QSpinBox, QDoubleSpinBox {
+    background-color: #1a2332;
+    color: #f1f5f9;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 12px 16px;
+}
+
+QLineEdit:focus, QTextEdit:focus, QComboBox:focus, QSpinBox:focus, QDoubleSpinBox:focus {
+    border: 2px solid #60a5fa;
+    background-color: #1e293b;
+}
+
+/* === SCROLLBARS === */
+QScrollBar:vertical {
+    background-color: #1a2332;
+    width: 12px;
+}
+
+QScrollBar::handle:vertical {
+    background-color: #475569;
+    border-radius: 6px;
+    min-height: 30px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background-color: #64748b;
+}
+
+QScrollBar:horizontal {
+    background-color: #1a2332;
+    height: 12px;
+}
+
+QScrollBar::handle:horizontal {
+    background-color: #475569;
+    border-radius: 6px;
+    min-width: 30px;
+}
+
+QScrollBar::handle:horizontal:hover {
+    background-color: #64748b;
+}
+
+/* === LABELS === */
+QLabel {
+    color: #f1f5f9;
+    background: transparent;
+}
+
+/* === MENUS === */
+QMenuBar {
+    background-color: #0f172a;
+    color: #f1f5f9;
+    border-bottom: 1px solid #334155;
+}
+
+QMenuBar::item:selected {
+    background-color: #1a2332;
+}
+
+QMenu {
+    background-color: #1a2332;
+    color: #f1f5f9;
+    border: 1px solid #334155;
+}
+
+QMenu::item:selected {
+    background-color: #334155;
+}
+
+/* === TABS === */
+QTabBar::tab {
+    background-color: #1a2332;
+    color: #f1f5f9;
+    padding: 8px 16px;
+    border: 1px solid #334155;
+}
+
+QTabBar::tab:selected {
+    background-color: #1e293b;
+    border-bottom: 3px solid #60a5fa;
+}
+
+/* === MISC === */
+QCheckBox, QRadioButton {
+    color: #f1f5f9;
+    spacing: 8px;
+}
+
+QGroupBox {
+    color: #f1f5f9;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 12px;
+    margin-top: 8px;
+}

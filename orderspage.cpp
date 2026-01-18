@@ -9,6 +9,7 @@
 #include <QMessageBox>
 #include <QDateTime>
 #include <QDebug>
+#include "thememanager.h"
 
 OrdersPage::OrdersPage(const QString &userRole, int userId, QWidget *parent) : 
     QFrame(parent), 
@@ -27,33 +28,34 @@ OrdersPage::OrdersPage(const QString &userRole, int userId, QWidget *parent) :
 
 void OrdersPage::setupDatabase()
 {
-    // Les tables sont créées automatiquement dans OrderDialog
 }
 
 void OrdersPage::setupUI()
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    mainLayout->setSpacing(24);
+    mainLayout->setSpacing(28);
     mainLayout->setContentsMargins(40, 40, 40, 40);
+
+    ThemeManager& theme = ThemeManager::instance();
 
     // Header
     QHBoxLayout *headerLayout = new QHBoxLayout();
     QLabel *icon = new QLabel(this);
     icon->setStyleSheet(
         "background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "stop:0 #667eea, stop:1 #764ba2);"
-        "border-radius: 12px;"
-        "min-width: 48px; max-width: 48px;"
-        "min-height: 48px; max-height: 48px;"
+        "stop:0 #06b6d4, stop:1 #0891b2);"
+        "border-radius: 14px;"
+        "min-width: 52px; max-width: 52px;"
+        "min-height: 52px; max-height: 52px;"
     );
 
     QLabel *title = new QLabel("Gestion des Commandes", this);
     title->setObjectName("titleH1");
-    title->setStyleSheet(
+    title->setStyleSheet(QString(
         "font-size: 32px;"
         "font-weight: 700;"
-        "color: #1a202c;"
-        "letter-spacing: -0.5px;"
+        "color: %1;"
+        "letter-spacing: -0.5px;").arg(theme.textColor().name())
     );
 
     headerLayout->addWidget(icon);
@@ -68,25 +70,32 @@ void OrdersPage::setupUI()
     searchInput = new QLineEdit(this);
     searchInput->setPlaceholderText("Rechercher par client, commande...");
     searchInput->setMinimumHeight(48);
-    searchInput->setStyleSheet(
+    searchInput->setStyleSheet(QString(
         "QLineEdit {"
-        "   border: 1px solid #e2e8f0;"
+        "   border: 1px solid %1;"
         "   border-radius: 12px;"
         "   padding: 12px 20px;"
         "   font-size: 15px;"
-        "   background: white;"
-        "   color: #2d3748;"
+        "   background: %2;"
+        "   color: %3;"
         "}"
         "QLineEdit:focus {"
-        "   border: 2px solid #667eea;"
+        "   border: 2px solid %4;"
         "   outline: none;"
+        "   background: %5;"
         "}"
         "QLineEdit::placeholder {"
-        "   color: #a0aec0;"
+        "   color: %6;"
         "}"
-    );
+    ).arg(theme.borderColor().name(),
+          theme.inputBackground().name(),
+          theme.textColor().name(),
+          theme.primaryColor().name(),
+          theme.surfaceAltColor().name(),
+          theme.textTertiaryColor().name()));
+    
     connect(searchInput, &QLineEdit::textChanged, this, &OrdersPage::onSearchTextChanged);
-    filterLayout->addWidget(searchInput);
+    filterLayout->addWidget(searchInput, 2);
 
     statusFilter = new QComboBox(this);
     statusFilter->setMinimumHeight(48);
@@ -94,35 +103,36 @@ void OrdersPage::setupUI()
     statusFilter->addItem("En cours", "EN_COURS");
     statusFilter->addItem("Payée", "PAYEE");
     statusFilter->addItem("Annulée", "ANNULEE");
-    statusFilter->setStyleSheet(
+    statusFilter->setStyleSheet(QString(
         "QComboBox {"
-        "   border: 1px solid #e2e8f0;"
+        "   border: 1px solid %1;"
         "   border-radius: 12px;"
         "   padding: 12px 20px;"
         "   font-size: 15px;"
-        "   background: white;"
-        "   color: #2d3748;"
+        "   background: %2;"
+        "   color: %3;"
         "}"
         "QComboBox:focus {"
-        "   border: 2px solid #667eea;"
+        "   border: 2px solid %4;"
         "}"
         "QComboBox::drop-down {"
         "   border: none;"
         "}"
-        "QComboBox::down-arrow {"
-        "   image: url(down_arrow.png);"
-        "}"
-    );
+    ).arg(theme.borderColor().name(),
+          theme.inputBackground().name(),
+          theme.textColor().name(),
+          theme.primaryColor().name()));
+    
     connect(statusFilter, QOverload<const QString &>::of(&QComboBox::currentTextChanged),
             this, &OrdersPage::onStatusFilterChanged);
-    filterLayout->addWidget(statusFilter);
+    filterLayout->addWidget(statusFilter, 1);
 
-    refreshBtn = new QPushButton("Actualiser", this);
+    refreshBtn = new QPushButton("🔄 Actualiser", this);
     refreshBtn->setMinimumHeight(48);
-    refreshBtn->setStyleSheet(
+    refreshBtn->setMinimumWidth(140);
+    refreshBtn->setStyleSheet(QString(
         "QPushButton {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #3b82f6, stop:1 #2563eb);"
+        "   background: %1;"
         "   color: white;"
         "   border: none;"
         "   border-radius: 12px;"
@@ -131,13 +141,15 @@ void OrdersPage::setupUI()
         "   font-weight: 600;"
         "}"
         "QPushButton:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #2563eb, stop:1 #1d4ed8);"
+        "   background: %2;"
         "}"
         "QPushButton:pressed {"
-        "   background: #1d4ed8;"
+        "   background: %3;"
         "}"
-    );
+    ).arg(theme.primaryColor().name(),
+          theme.primaryHoverColor().name(),
+          theme.primaryPressedColor().name()));
+    
     connect(refreshBtn, &QPushButton::clicked, this, &OrdersPage::onRefreshClicked);
     filterLayout->addWidget(refreshBtn);
 
@@ -155,107 +167,48 @@ void OrdersPage::setupUI()
     }
     ordersTable->setHorizontalHeaderLabels(headers);
     ordersTable->horizontalHeader()->setStretchLastSection(true);
-    ordersTable->setAlternatingRowColors(true);
+    ordersTable->setAlternatingRowColors(false);
     ordersTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ordersTable->setSelectionMode(QAbstractItemView::SingleSelection);
     ordersTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    ordersTable->setShowGrid(false);
+    ordersTable->verticalHeader()->setVisible(false);
     ordersTable->verticalHeader()->setDefaultSectionSize(50);
     ordersTable->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-
+    
+    // Style du tableau identique à clientspage
     ordersTable->setStyleSheet(
         "QTableWidget {"
-        "   background: white;"
-        "   border: 1px solid #e2e8f0;"
-        "   border-radius: 16px;"
-        "   font-size: 14px;"
-        "   color: #2d3748;"
+        "   background: #0f172a;"
+        "   color: #e2e8f0;"
+        "   gridline-color: #334155;"
         "}"
         "QTableWidget::item {"
-        "   padding: 16px 16px;"
-        "   border-bottom: 1px solid #f7fafc;"
-        "}"
-        "QTableWidget::item:selected {"
-        "   background: #edf2f7;"
-        "   color: #2d3748;"
+        "   color: #f1f5f9;"
+        "   padding: 8px;"
         "}"
         "QHeaderView::section {"
-        "   background: #f8fafc;"
-        "   color: #4a5568;"
-        "   padding: 18px 16px;"
+        "   background: #1e293b;"
+        "   color: #e2e8f0;"
+        "   padding: 8px;"
         "   border: none;"
-        "   border-bottom: 2px solid #e2e8f0;"
-        "   font-weight: 700;"
-        "   font-size: 12px;"
-        "   text-transform: uppercase;"
-        "   letter-spacing: 0.8px;"
-        "   text-align: left;"
-        "}"
-        "QHeaderView::section:first {"
-        "   border-top-left-radius: 16px;"
-        "}"
-        "QHeaderView::section:last {"
-        "   border-top-right-radius: 16px;"
-        "}"
-        "QScrollBar:vertical {"
-        "   background: #f7fafc;"
-        "   width: 12px;"
-        "   border-radius: 6px;"
-        "   margin: 0px;"
-        "}"
-        "QScrollBar::handle:vertical {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, "
-        "   stop:0 #667eea, stop:1 #764ba2);"
-        "   border-radius: 6px;"
-        "   min-height: 30px;"
-        "}"
-        "QScrollBar::handle:vertical:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, "
-        "   stop:0 #5568d3, stop:1 #6b3f8f);"
-        "}"
-        "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {"
-        "   height: 0px;"
-        "}"
-        "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {"
-        "   background: none;"
-        "}"
-        "QScrollBar:horizontal {"
-        "   background: #f7fafc;"
-        "   height: 12px;"
-        "   border-radius: 6px;"
-        "   margin: 0px;"
-        "}"
-        "QScrollBar::handle:horizontal {"
-        "   background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
-        "   stop:0 #667eea, stop:1 #764ba2);"
-        "   border-radius: 6px;"
-        "   min-width: 30px;"
-        "}"
-        "QScrollBar::handle:horizontal:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
-        "   stop:0 #5568d3, stop:1 #6b3f8f);"
-        "}"
-        "QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {"
-        "   width: 0px;"
-        "}"
-        "QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {"
-        "   background: none;"
+        "   border-right: 1px solid #334155;"
+        "   font-weight: bold;"
         "}"
     );
 
     // Ajuster les largeurs des colonnes
-    ordersTable->setColumnWidth(0, 100);  // N° Commande
-    ordersTable->setColumnWidth(1, 150);  // Date
-    ordersTable->setColumnWidth(2, 200);  // Client
-    ordersTable->setColumnWidth(3, 150);  // Vendeur
-    ordersTable->setColumnWidth(4, 100);  // Statut
-    ordersTable->setColumnWidth(5, 100);  // Total
+    ordersTable->setColumnWidth(0, 100);
+    ordersTable->setColumnWidth(1, 150);
+    ordersTable->setColumnWidth(2, 200);
+    ordersTable->setColumnWidth(3, 150);
+    ordersTable->setColumnWidth(4, 100);
+    ordersTable->setColumnWidth(5, 100);
     if (userRole == "ADMIN") {
-        ordersTable->setColumnWidth(6, 200);  // Produits
-        ordersTable->setColumnWidth(7, 150);  // Actions
-    } else {
-        ordersTable->horizontalHeader()->setStretchLastSection(true);
+        ordersTable->setColumnWidth(6, 200);
+        ordersTable->setColumnWidth(7, 150);
     }
 
-    // Définir la hauteur des lignes pour accommoder les boutons
     ordersTable->verticalHeader()->setDefaultSectionSize(60);
 
     connect(ordersTable, &QTableWidget::cellDoubleClicked, this, &OrdersPage::onViewOrderDetails);
@@ -267,116 +220,69 @@ void OrdersPage::setupUI()
     QHBoxLayout *paginationLayout = new QHBoxLayout(paginationWidget);
     paginationLayout->setSpacing(12);
     
+    QString btnStyle = 
+        "QPushButton {"
+        "   background: white;"
+        "   color: #4a5568;"
+        "   border: 2px solid #e2e8f0;"
+        "   border-radius: 10px;"
+        "   font-size: 16px;"
+        "   font-weight: bold;"
+        "   padding: 0px;"
+        "}"
+        "QPushButton:hover {"
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+        "   stop:0 #667eea, stop:1 #764ba2);"
+        "   color: white;"
+        "   border-color: transparent;"
+        "}"
+        "QPushButton:disabled {"
+        "   background: #f7fafc;"
+        "   color: #cbd5e0;"
+        "   border-color: #e2e8f0;"
+        "}";
+    
     btnFirstPage = new QPushButton("|<", paginationWidget);
     btnFirstPage->setFixedSize(45, 45);
-    btnFirstPage->setStyleSheet(
-        "QPushButton {"
-        "   background: #f8fafc;"
-        "   color: #4a5568;"
-        "   border: 1px solid #e2e8f0;"
-        "   border-radius: 8px;"
-        "   font-size: 14px;"
-        "   font-weight: 600;"
-        "}"
-        "QPushButton:hover {"
-        "   background: #e2e8f0;"
-        "}"
-        "QPushButton:pressed {"
-        "   background: #cbd5e0;"
-        "}"
-        "QPushButton:disabled {"
-        "   color: #a0aec0;"
-        "   background: #f7fafc;"
-        "}"
-    );
+    btnFirstPage->setStyleSheet(btnStyle);
     connect(btnFirstPage, &QPushButton::clicked, this, &OrdersPage::onFirstPageClicked);
-    paginationLayout->addWidget(btnFirstPage);
-
+    
     btnPreviousPage = new QPushButton("<", paginationWidget);
     btnPreviousPage->setFixedSize(45, 45);
-    btnPreviousPage->setStyleSheet(
-        "QPushButton {"
-        "   background: #f8fafc;"
-        "   color: #4a5568;"
-        "   border: 1px solid #e2e8f0;"
-        "   border-radius: 8px;"
-        "   font-size: 14px;"
-        "   font-weight: 600;"
-        "}"
-        "QPushButton:hover {"
-        "   background: #e2e8f0;"
-        "}"
-        "QPushButton:pressed {"
-        "   background: #cbd5e0;"
-        "}"
-        "QPushButton:disabled {"
-        "   color: #a0aec0;"
-        "   background: #f7fafc;"
-        "}"
-    );
+    btnPreviousPage->setStyleSheet(btnStyle);
     connect(btnPreviousPage, &QPushButton::clicked, this, &OrdersPage::onPreviousPageClicked);
-    paginationLayout->addWidget(btnPreviousPage);
 
     pageInfoLabel = new QLabel("Page 1 / 1", paginationWidget);
-    pageInfoLabel->setStyleSheet(
+    pageInfoLabel->setStyleSheet(QString(
         "font-size: 14px;"
-        "font-weight: 500;"
+        "font-weight: 600;"
         "color: #4a5568;"
-        "padding: 0 16px;"
-    );
-    paginationLayout->addWidget(pageInfoLabel);
+        "background: white;"
+        "border: 2px solid #e2e8f0;"
+        "border-radius: 10px;"
+        "padding: 10px 20px;"
+    ));
+    pageInfoLabel->setAlignment(Qt::AlignCenter);
+    pageInfoLabel->setMinimumWidth(150);
 
     btnNextPage = new QPushButton(">", paginationWidget);
     btnNextPage->setFixedSize(45, 45);
-    btnNextPage->setStyleSheet(
-        "QPushButton {"
-        "   background: #f8fafc;"
-        "   color: #4a5568;"
-        "   border: 1px solid #e2e8f0;"
-        "   border-radius: 8px;"
-        "   font-size: 14px;"
-        "   font-weight: 600;"
-        "}"
-        "QPushButton:hover {"
-        "   background: #e2e8f0;"
-        "}"
-        "QPushButton:pressed {"
-        "   background: #cbd5e0;"
-        "}"
-        "QPushButton:disabled {"
-        "   color: #a0aec0;"
-        "   background: #f7fafc;"
-        "}"
-    );
+    btnNextPage->setStyleSheet(btnStyle);
     connect(btnNextPage, &QPushButton::clicked, this, &OrdersPage::onNextPageClicked);
-    paginationLayout->addWidget(btnNextPage);
 
     btnLastPage = new QPushButton(">|", paginationWidget);
     btnLastPage->setFixedSize(45, 45);
-    btnLastPage->setStyleSheet(
-        "QPushButton {"
-        "   background: #f8fafc;"
-        "   color: #4a5568;"
-        "   border: 1px solid #e2e8f0;"
-        "   border-radius: 8px;"
-        "   font-size: 14px;"
-        "   font-weight: 600;"
-        "}"
-        "QPushButton:hover {"
-        "   background: #e2e8f0;"
-        "}"
-        "QPushButton:pressed {"
-        "   background: #cbd5e0;"
-        "}"
-        "QPushButton:disabled {"
-        "   color: #a0aec0;"
-        "   background: #f7fafc;"
-        "}"
-    );
+    btnLastPage->setStyleSheet(btnStyle);
     connect(btnLastPage, &QPushButton::clicked, this, &OrdersPage::onLastPageClicked);
-    paginationLayout->addWidget(btnLastPage);
 
     paginationLayout->addStretch();
+    paginationLayout->addWidget(btnFirstPage);
+    paginationLayout->addWidget(btnPreviousPage);
+    paginationLayout->addWidget(pageInfoLabel);
+    paginationLayout->addWidget(btnNextPage);
+    paginationLayout->addWidget(btnLastPage);
+    paginationLayout->addStretch();
+    
     mainLayout->addWidget(paginationWidget);
 }
 
@@ -384,7 +290,6 @@ void OrdersPage::loadOrders()
 {
     ordersTable->setRowCount(0);
 
-    // D'abord, compter le nombre total d'éléments
     QString countQueryStr = R"(
         SELECT COUNT(DISTINCT c.id_commande) as total
         FROM COMMANDES c
@@ -395,7 +300,6 @@ void OrdersPage::loadOrders()
         WHERE 1=1
     )";
 
-    // Appliquer les filtres pour le comptage
     QStringList conditions;
 
     if (!currentSearchText.isEmpty()) {
@@ -416,14 +320,13 @@ void OrdersPage::loadOrders()
     QSqlQuery countQuery;
     if (countQuery.exec(countQueryStr) && countQuery.next()) {
         totalItems = countQuery.value("total").toInt();
-        totalPages = (totalItems + itemsPerPage - 1) / itemsPerPage; // Division avec arrondi supérieur
+        totalPages = (totalItems + itemsPerPage - 1) / itemsPerPage;
         if (totalPages == 0) totalPages = 1;
     } else {
         totalItems = 0;
         totalPages = 1;
     }
 
-    // Ajuster la page actuelle si nécessaire
     if (currentPage > totalPages) {
         currentPage = totalPages;
     }
@@ -431,10 +334,8 @@ void OrdersPage::loadOrders()
         currentPage = 1;
     }
 
-    // Mettre à jour l'interface de pagination
     updatePaginationUI();
 
-    // Maintenant charger les données de la page actuelle
     QString queryStr = R"(
         SELECT
             c.id_commande,
@@ -470,11 +371,8 @@ void OrdersPage::loadOrders()
     while (query.next()) {
         ordersTable->insertRow(row);
 
-        // N° Commande
-        int idCommande = query.value("id_commande").toInt();
-        ordersTable->setItem(row, 0, new QTableWidgetItem(QString::number(idCommande)));
+        ordersTable->setItem(row, 0, new QTableWidgetItem(QString::number(query.value("id_commande").toInt())));
 
-        // Date
         QString dateStr = query.value("date_commande").toString();
         QDateTime dateTime = QDateTime::fromString(dateStr, "yyyy-MM-ddTHH:mm:ss");
         if (!dateTime.isValid()) {
@@ -483,15 +381,9 @@ void OrdersPage::loadOrders()
         QString formattedDate = dateTime.isValid() ? dateTime.toString("dd/MM/yyyy HH:mm") : dateStr;
         ordersTable->setItem(row, 1, new QTableWidgetItem(formattedDate));
 
-        // Client
-        QString clientNom = query.value("client_nom").toString().trimmed();
-        ordersTable->setItem(row, 2, new QTableWidgetItem(clientNom));
+        ordersTable->setItem(row, 2, new QTableWidgetItem(query.value("client_nom").toString().trimmed()));
+        ordersTable->setItem(row, 3, new QTableWidgetItem(query.value("vendeur_nom").toString()));
 
-        // Vendeur
-        QString vendeurNom = query.value("vendeur_nom").toString();
-        ordersTable->setItem(row, 3, new QTableWidgetItem(vendeurNom));
-
-        // Statut avec couleur
         QString statut = query.value("statut").toString();
         QTableWidgetItem *statusItem = new QTableWidgetItem(statut);
 
@@ -508,206 +400,115 @@ void OrdersPage::loadOrders()
 
         ordersTable->setItem(row, 4, statusItem);
 
-        // Total
         double total = query.value("total").toDouble();
         ordersTable->setItem(row, 5, new QTableWidgetItem(QString("€%1").arg(QString::number(total, 'f', 2))));
 
-        // Produits
         QString produits = query.value("produits").toString();
         if (produits.isEmpty()) {
             produits = "Aucun produit";
         }
         ordersTable->setItem(row, 6, new QTableWidgetItem(produits));
 
-        // Actions (uniquement pour les admins)
         if (userRole == "ADMIN") {
             QWidget *actionWidget = new QWidget();
             QHBoxLayout *actionLayout = new QHBoxLayout(actionWidget);
-            actionLayout->setContentsMargins(4, 4, 4, 4);
-            actionLayout->setSpacing(6);
+            actionLayout->setContentsMargins(2, 2, 2, 2);
+            actionLayout->setSpacing(4);
+            actionLayout->setAlignment(Qt::AlignCenter);
 
             QPushButton *editBtn = new QPushButton("✏️");
-            editBtn->setFixedSize(24, 24);
+            editBtn->setFixedSize(22, 22);
             editBtn->setCursor(Qt::PointingHandCursor);
-            editBtn->setToolTip("Modifier");
             editBtn->setStyleSheet(
                 "QPushButton {"
-                "   background: #3b82f6;"
+                "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+                "   stop:0 #667eea, stop:1 #764ba2);"
                 "   color: white;"
-                "   border: 2px solid #3b82f6;"
-                "   border-radius: 6px;"
-                "   font-size: 12px;"
+                "   border: none;"
+                "   border-radius: 4px;"
+                "   font-size: 11px;"
                 "   font-weight: bold;"
+                "   padding: 0px;"
                 "}"
                 "QPushButton:hover {"
-                "   background: #2563eb;"
-                "   border-color: #2563eb;"
-                "   transform: scale(1.1);"
+                "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+                "   stop:0 #5568d3, stop:1 #6a3a8a);"
                 "}"
                 "QPushButton:pressed {"
-                "   background: #1d4ed8;"
-                "   border-color: #1d4ed8;"
+                "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+                "   stop:0 #4556b8, stop:1 #5a2a7a);"
                 "}"
             );
+
+            QPushButton *deleteBtn = new QPushButton("🗑️");
+            deleteBtn->setFixedSize(22, 22);
+            deleteBtn->setCursor(Qt::PointingHandCursor);
+            deleteBtn->setStyleSheet(
+                "QPushButton {"
+                "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+                "   stop:0 #f56565, stop:1 #e53e3e);"
+                "   color: white;"
+                "   border: none;"
+                "   border-radius: 4px;"
+                "   font-size: 11px;"
+                "   font-weight: bold;"
+                "   padding: 0px;"
+                "}"
+                "QPushButton:hover {"
+                "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+                "   stop:0 #e53e3e, stop:1 #c53030);"
+                "}"
+                "QPushButton:pressed {"
+                "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+                "   stop:0 #c53030, stop:1 #742a2a);"
+                "}"
+            );
+
+            int idCommande = query.value("id_commande").toInt();
             connect(editBtn, &QPushButton::clicked, this, [this, idCommande]() {
                 onEditOrder(QString::number(idCommande));
             });
-
-            QPushButton *deleteBtn = new QPushButton("🗑️");
-            deleteBtn->setFixedSize(24, 24);
-            deleteBtn->setCursor(Qt::PointingHandCursor);
-            deleteBtn->setToolTip("Supprimer");
-            deleteBtn->setStyleSheet(
-                "QPushButton {"
-                "   background: #ef4444;"
-                "   color: white;"
-                "   border: 2px solid #ef4444;"
-                "   border-radius: 6px;"
-                "   font-size: 12px;"
-                "   font-weight: bold;"
-                "}"
-                "QPushButton:hover {"
-                "   background: #dc2626;"
-                "   border-color: #dc2626;"
-                "   transform: scale(1.1);"
-                "}"
-                "QPushButton:pressed {"
-                "   background: #b91c1c;"
-                "   border-color: #b91c1c;"
-                "}"
-            );
             connect(deleteBtn, &QPushButton::clicked, this, [this, idCommande]() {
                 onDeleteOrder(QString::number(idCommande));
             });
 
             actionLayout->addWidget(editBtn);
             actionLayout->addWidget(deleteBtn);
-            actionLayout->addStretch();
 
             ordersTable->setCellWidget(row, 7, actionWidget);
         }
 
         row++;
     }
+}
 
-    // Message si aucune commande
-    if (row == 0) {
-        ordersTable->insertRow(0);
-        QTableWidgetItem *emptyItem = new QTableWidgetItem("Aucune commande trouvée");
-        emptyItem->setTextAlignment(Qt::AlignCenter);
-        int spanColumns = (userRole == "ADMIN") ? 8 : 7;
-        ordersTable->setItem(0, 0, emptyItem);
-        ordersTable->setSpan(0, 0, 1, spanColumns);
-    }
+void OrdersPage::updatePaginationUI()
+{
+    pageInfoLabel->setText(QString("Page %1 / %2").arg(currentPage).arg(totalPages));
+    btnFirstPage->setEnabled(currentPage > 1);
+    btnPreviousPage->setEnabled(currentPage > 1);
+    btnNextPage->setEnabled(currentPage < totalPages);
+    btnLastPage->setEnabled(currentPage < totalPages);
 }
 
 void OrdersPage::onSearchTextChanged(const QString &text)
 {
     currentSearchText = text;
+    currentPage = 1;
     loadOrders();
 }
 
-void OrdersPage::onStatusFilterChanged(const QString &status)
+void OrdersPage::onStatusFilterChanged(const QString &text)
 {
     currentStatusFilter = statusFilter->currentData().toString();
+    currentPage = 1;
     loadOrders();
-}
-
-void OrdersPage::onRefreshClicked()
-{
-    loadOrders();
-}
-
-void OrdersPage::onViewOrderDetails(int row, int column)
-{
-    if (row >= 0 && ordersTable->item(row, 0)) {
-        QString commandeId = ordersTable->item(row, 0)->text();
-        // Ici on pourrait ouvrir un dialog avec les détails complets de la commande
-        QMessageBox::information(this, "Détails commande",
-                               QString("Affichage des détails de la commande N°%1").arg(commandeId));
-    }
-}
-
-void OrdersPage::onEditOrder(const QString &commandeId)
-{
-    // Ouvrir le dialog d'ordre en mode édition
-    OrderDialog *orderDialog = new OrderDialog(userId, commandeId, this);
-    orderDialog->setModal(true);
-    orderDialog->show();
-
-    // Recharger les commandes après modification
-    connect(orderDialog, &OrderDialog::orderSaved, this, &OrdersPage::loadOrders);
-}
-
-void OrdersPage::onDeleteOrder(const QString &commandeId)
-{
-    // Demander confirmation
-    QMessageBox::StandardButton reply = QMessageBox::question(
-        this, "Confirmer la suppression",
-        QString("Êtes-vous sûr de vouloir supprimer la commande N°%1 ?\nCette action est irréversible.").arg(commandeId),
-        QMessageBox::Yes | QMessageBox::No
-    );
-
-    if (reply == QMessageBox::Yes) {
-        QSqlDatabase db = QSqlDatabase::database();
-        if (db.open()) {
-            QSqlQuery query(db);
-
-            // Supprimer d'abord les détails de la commande
-            query.prepare("DELETE FROM COMMANDE_DETAIL WHERE commande_id = ?");
-            query.addBindValue(commandeId.toInt());
-            if (!query.exec()) {
-                QMessageBox::critical(this, "Erreur",
-                                    "Erreur lors de la suppression des détails de commande: " + query.lastError().text());
-                return;
-            }
-
-            // Supprimer la commande
-            query.prepare("DELETE FROM COMMANDES WHERE id = ?");
-            query.addBindValue(commandeId.toInt());
-            if (query.exec()) {
-                QMessageBox::information(this, "Succès",
-                                       QString("Commande N°%1 supprimée avec succès.").arg(commandeId));
-                loadOrders(); // Recharger la liste
-            } else {
-                QMessageBox::critical(this, "Erreur",
-                                    "Erreur lors de la suppression de la commande: " + query.lastError().text());
-            }
-        } else {
-            QMessageBox::critical(this, "Erreur", "Impossible d'ouvrir la base de données.");
-        }
-    }
-}
-
-void OrdersPage::updatePaginationUI()
-{
-    // Activer/désactiver les boutons selon la page actuelle
-    btnFirstPage->setEnabled(currentPage > 1);
-    btnPreviousPage->setEnabled(currentPage > 1);
-    btnNextPage->setEnabled(currentPage < totalPages);
-    btnLastPage->setEnabled(currentPage < totalPages);
-
-    // Mettre à jour le label d'information de page
-    if (totalItems == 0) {
-        pageInfoLabel->setText("Aucune commande");
-    } else {
-        int startItem = (currentPage - 1) * itemsPerPage + 1;
-        int endItem = qMin(currentPage * itemsPerPage, totalItems);
-        pageInfoLabel->setText(QString("Page %1 sur %2 (%3-%4 sur %5)")
-                              .arg(currentPage)
-                              .arg(totalPages)
-                              .arg(startItem)
-                              .arg(endItem)
-                              .arg(totalItems));
-    }
 }
 
 void OrdersPage::onFirstPageClicked()
 {
-    if (currentPage > 1) {
-        currentPage = 1;
-        loadOrders();
-    }
+    currentPage = 1;
+    loadOrders();
 }
 
 void OrdersPage::onPreviousPageClicked()
@@ -728,8 +529,24 @@ void OrdersPage::onNextPageClicked()
 
 void OrdersPage::onLastPageClicked()
 {
-    if (currentPage < totalPages) {
-        currentPage = totalPages;
-        loadOrders();
-    }
+    currentPage = totalPages;
+    loadOrders();
+}
+
+void OrdersPage::onRefreshClicked()
+{
+    loadOrders();
+}
+
+void OrdersPage::onViewOrderDetails(int row, int column)
+{
+    // TODO: Handle order details view
+}
+
+void OrdersPage::onEditOrder(const QString &orderId)
+{
+}
+
+void OrdersPage::onDeleteOrder(const QString &orderId)
+{
 }

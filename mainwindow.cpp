@@ -1,8 +1,11 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "thememanager.h"
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QDebug>
+#include <QApplication>
+#include <QPalette>
 #include "dashboardpage.h"
 #include "userspage.h"
 #include "clientspage.h"
@@ -25,6 +28,8 @@ MainWindow::MainWindow(const QString &userRole, int userId, QWidget *parent)
 
     // Créer le layout principal
     QHBoxLayout *mainLayout = new QHBoxLayout(central);
+    mainLayout->setSpacing(0);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
 
     // Créer la sidebar avec le rôle de l'utilisateur
     sidebar = new Sidebar(userRole, this);
@@ -32,7 +37,7 @@ MainWindow::MainWindow(const QString &userRole, int userId, QWidget *parent)
 
     // Créer le stacked widget pour les pages
     stackedWidget = new QStackedWidget(this);
-    mainLayout->addWidget(stackedWidget, 1); // Stretch factor 1
+    mainLayout->addWidget(stackedWidget, 1);
 
     // Ajouter le Dashboard en premier
     DashboardPage *dashboardPage = new DashboardPage(this);
@@ -45,6 +50,7 @@ MainWindow::MainWindow(const QString &userRole, int userId, QWidget *parent)
     }
 
     ClientsPage *clientsPage = new ClientsPage(this);
+    this->clientsPage = clientsPage;
     stackedWidget->addWidget(clientsPage);
 
     productsPage = new ProductsPage(userRole, currentUserId, this);
@@ -62,31 +68,77 @@ MainWindow::MainWindow(const QString &userRole, int userId, QWidget *parent)
         stackedWidget->addWidget(cashPage);
     }
 
-    // Connecter la sidebar au stacked widget
     connect(sidebar, &Sidebar::pageChanged, stackedWidget, &QStackedWidget::setCurrentIndex);
     connect(sidebar, &Sidebar::logoutRequested, this, &MainWindow::onLogoutRequested);
-
-    // Connecter le changement de page pour actualiser les données
     connect(stackedWidget, &QStackedWidget::currentChanged, this, &MainWindow::onPageChanged);
-
-    // Connecter la validation de commande depuis la page produits à l'actualisation de la page commandes
     connect(productsPage, &ProductsPage::orderValidated, ordersPage, &OrdersPage::loadOrders);
-    // Et à l'actualisation de la page produits pour mettre à jour les stocks
     connect(productsPage, &ProductsPage::orderValidated, productsPage, &ProductsPage::loadProducts);
+
+    ThemeManager& themeManager = ThemeManager::instance();
+    connect(&themeManager, &ThemeManager::themeChanged, this, &MainWindow::onThemeChanged);
+
+    // Appliquer le thème initial
+    applyTheme();
 }
 
 void MainWindow::onLogoutRequested()
 {
-    // Émettre le signal de déconnexion pour retourner à la page de login
     emit logoutRequested();
-    // Fermer la fenêtre principale
     close();
 }
 
 void MainWindow::onPageChanged(int index)
 {
-    // Actualiser les données de la page commandes quand elle devient visible
     if (index == ordersPageIndex) {
+        ordersPage->loadOrders();
+    }
+}
+
+void MainWindow::onThemeToggled()
+{
+    applyThemeToAllPages();
+}
+
+void MainWindow::onThemeChanged(ThemeManager::Theme theme)
+{
+    applyThemeToAllPages();
+}
+
+void MainWindow::applyTheme()
+{
+    ThemeManager& themeManager = ThemeManager::instance();
+    
+    QString completeStyle = themeManager.getCompleteStylesheet();
+    qApp->setStyleSheet(completeStyle);
+    
+    setStyleSheet(QString(
+        "QMainWindow, QDialog, QWidget, QFrame {"
+        "   background: %1;"
+        "   color: %2;"
+        "   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;"
+        "}"
+    ).arg(themeManager.backgroundColor().name(), 
+          themeManager.textColor().name()));
+    
+    update();
+    qApp->processEvents();
+}
+
+void MainWindow::applyThemeToAllPages()
+{
+    applyTheme();
+    
+    if (sidebar) {
+        sidebar->updateTheme();
+    }
+    
+    if (clientsPage) {
+        clientsPage->onThemeChanged();
+    }
+    if (productsPage) {
+        productsPage->loadProducts();
+    }
+    if (ordersPage) {
         ordersPage->loadOrders();
     }
 }

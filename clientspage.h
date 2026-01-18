@@ -25,6 +25,9 @@ private slots:
     void onNextPage();
     void onLastPage();
 
+public slots:
+    void onThemeChanged();
+
 private:
     void setupUI();
     void setupDatabase();

@@ -17,6 +17,9 @@ signals:
     void pageChanged(int pageIndex);
     void logoutRequested();
 
+public slots:
+    void updateTheme();
+
 private:
     QVBoxLayout *layout;
     QSignalMapper *mapper;

@@ -50,7 +50,8 @@ template <> constexpr inline auto ClientsPage::qt_create_metaobjectdata<qt_meta_
         "onFirstPage",
         "onPreviousPage",
         "onNextPage",
-        "onLastPage"
+        "onLastPage",
+        "onThemeChanged"
     };
 
     QtMocHelpers::UintData qt_methods {
@@ -76,6 +77,8 @@ template <> constexpr inline auto ClientsPage::qt_create_metaobjectdata<qt_meta_
         QtMocHelpers::SlotData<void()>(10, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'onLastPage'
         QtMocHelpers::SlotData<void()>(11, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'onThemeChanged'
+        QtMocHelpers::SlotData<void()>(12, 2, QMC::AccessPublic, QMetaType::Void),
     };
     QtMocHelpers::UintData qt_properties {
     };
@@ -107,6 +110,7 @@ void ClientsPage::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id,
         case 5: _t->onPreviousPage(); break;
         case 6: _t->onNextPage(); break;
         case 7: _t->onLastPage(); break;
+        case 8: _t->onThemeChanged(); break;
         default: ;
         }
     }
@@ -131,14 +135,14 @@ int ClientsPage::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 8)
+        if (_id < 9)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 8;
+        _id -= 9;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 8)
+        if (_id < 9)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 8;
+        _id -= 9;
     }
     return _id;
 }

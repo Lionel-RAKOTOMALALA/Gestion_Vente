@@ -42,7 +42,8 @@ template <> constexpr inline auto Sidebar::qt_create_metaobjectdata<qt_meta_tag_
         "pageChanged",
         "",
         "pageIndex",
-        "logoutRequested"
+        "logoutRequested",
+        "updateTheme"
     };
 
     QtMocHelpers::UintData qt_methods {
@@ -52,6 +53,8 @@ template <> constexpr inline auto Sidebar::qt_create_metaobjectdata<qt_meta_tag_
         }}),
         // Signal 'logoutRequested'
         QtMocHelpers::SignalData<void()>(4, 2, QMC::AccessPublic, QMetaType::Void),
+        // Slot 'updateTheme'
+        QtMocHelpers::SlotData<void()>(5, 2, QMC::AccessPublic, QMetaType::Void),
     };
     QtMocHelpers::UintData qt_properties {
     };
@@ -77,6 +80,7 @@ void Sidebar::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, voi
         switch (_id) {
         case 0: _t->pageChanged((*reinterpret_cast<std::add_pointer_t<int>>(_a[1]))); break;
         case 1: _t->logoutRequested(); break;
+        case 2: _t->updateTheme(); break;
         default: ;
         }
     }
@@ -107,14 +111,14 @@ int Sidebar::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 2)
+        if (_id < 3)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 2;
+        _id -= 3;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 2)
+        if (_id < 3)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 2;
+        _id -= 3;
     }
     return _id;
 }

@@ -1,5 +1,6 @@
 #include "productspage.h"
 #include "productdialog.h"
+#include "thememanager.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -21,7 +22,6 @@ ProductsPage::ProductsPage(const QString &userRole, int userId, QWidget *parent)
     applyStyles();
     loadProducts();
     
-    // Initialiser le modal de commande seulement pour les vendeurs
     if (userRole == "VENDEUR") {
         orderDialog = new OrderDialog(userId, this);
         connect(orderDialog, &OrderDialog::orderSaved, [this]() { emit orderValidated(); });
@@ -48,27 +48,28 @@ void ProductsPage::setupDatabase()
 void ProductsPage::setupUI()
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    mainLayout->setSpacing(24);
+    mainLayout->setSpacing(28);
     mainLayout->setContentsMargins(40, 40, 40, 40);
 
     QHBoxLayout *headerLayout = new QHBoxLayout();
     QLabel *icon = new QLabel(this);
     icon->setStyleSheet(
         "background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "stop:0 #667eea, stop:1 #764ba2);"
-        "border-radius: 12px;"
-        "min-width: 48px; max-width: 48px;"
-        "min-height: 48px; max-height: 48px;"
+        "stop:0 #8b5cf6, stop:1 #6366f1);"
+        "border-radius: 14px;"
+        "min-width: 52px; max-width: 52px;"
+        "min-height: 52px; max-height: 52px;"
     );
 
     QLabel *title = new QLabel("Gestion des Produits", this);
     title->setObjectName("titleH1");
-    title->setStyleSheet(
+    ThemeManager& theme = ThemeManager::instance();
+    title->setStyleSheet(QString(
         "font-size: 32px;"
         "font-weight: 700;"
-        "color: #1a202c;"
+        "color: %1;"
         "letter-spacing: -0.5px;"
-    );
+    ).arg(theme.textColor().name()));
 
     headerLayout->addWidget(icon);
     headerLayout->addWidget(title);
@@ -81,23 +82,30 @@ void ProductsPage::setupUI()
     searchInput = new QLineEdit(this);
     searchInput->setPlaceholderText("Rechercher par nom ou description...");
     searchInput->setMinimumHeight(48);
-    searchInput->setStyleSheet(
+    searchInput->setStyleSheet(QString(
         "QLineEdit {"
-        "   border: 1px solid #e2e8f0;"
+        "   border: 1px solid %1;"
         "   border-radius: 12px;"
         "   padding: 12px 20px;"
         "   font-size: 15px;"
-        "   background: white;"
-        "   color: #2d3748;"
+        "   background: %2;"
+        "   color: %3;"
         "}"
         "QLineEdit:focus {"
-        "   border: 2px solid #667eea;"
+        "   border: 2px solid %4;"
         "   outline: none;"
+        "   background: %5;"
         "}"
         "QLineEdit::placeholder {"
-        "   color: #a0aec0;"
+        "   color: %6;"
         "}"
-    );
+    ).arg(theme.borderColor().name(),
+          theme.inputBackground().name(),
+          theme.textColor().name(),
+          theme.primaryColor().name(),
+          theme.surfaceAltColor().name(),
+          theme.textTertiaryColor().name()));
+    
     connect(searchInput, &QLineEdit::textChanged, this, &ProductsPage::onSearchTextChanged);
 
     searchLayout->addWidget(searchInput, 1);
@@ -110,10 +118,10 @@ void ProductsPage::setupUI()
         btnOrder = new QPushButton("🛒 Commander", this);
         btnOrder->setMinimumHeight(48);
         btnOrder->setCursor(Qt::PointingHandCursor);
-        btnOrder->setStyleSheet(
+        btnOrder->setStyleSheet(QString(
             "QPushButton {"
             "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, "
-            "   stop:0 #f59e0b, stop:1 #d97706);"
+            "   stop:0 %1, stop:1 %2);"
             "   color: white;"
             "   border: none;"
             "   border-radius: 12px;"
@@ -123,22 +131,23 @@ void ProductsPage::setupUI()
             "}"
             "QPushButton:hover {"
             "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, "
-            "   stop:0 #d97706, stop:1 #b45309);"
+            "   stop:0 %2, stop:1 %3);"
             "}"
             "QPushButton:pressed {"
-            "   background: #b45309;"
+            "   background: %3;"
             "}"
-        );
+        ).arg(theme.warningColor().name(), 
+              theme.primaryColor().name(),
+              theme.primaryHoverColor().name()));
         connect(btnOrder, &QPushButton::clicked, this, &ProductsPage::onOrderProduct);
         buttonLayout->addWidget(btnOrder);
     } else {
         btnAdd = new QPushButton("+ Ajouter", this);
         btnAdd->setMinimumHeight(48);
         btnAdd->setCursor(Qt::PointingHandCursor);
-        btnAdd->setStyleSheet(
+        btnAdd->setStyleSheet(QString(
             "QPushButton {"
-            "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-            "   stop:0 #3b82f6, stop:1 #2563eb);"
+            "   background: %1;"
             "   color: white;"
             "   border: none;"
             "   border-radius: 12px;"
@@ -147,24 +156,24 @@ void ProductsPage::setupUI()
             "   font-weight: 600;"
             "}"
             "QPushButton:hover {"
-            "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-            "   stop:0 #2563eb, stop:1 #1d4ed8);"
+            "   background: %2;"
             "}"
             "QPushButton:pressed {"
-            "   background: #1d4ed8;"
+            "   background: %3;"
             "}"
-        );
+        ).arg(theme.primaryColor().name(),
+              theme.primaryHoverColor().name(),
+              theme.primaryPressedColor().name()));
         connect(btnAdd, &QPushButton::clicked, this, &ProductsPage::onAddProduct);
         buttonLayout->addWidget(btnAdd);
     }
 
-    btnRefresh = new QPushButton("Actualiser", this);
+    btnRefresh = new QPushButton("🔄 Actualiser", this);
     btnRefresh->setMinimumHeight(48);
     btnRefresh->setCursor(Qt::PointingHandCursor);
-    btnRefresh->setStyleSheet(
+    btnRefresh->setStyleSheet(QString(
         "QPushButton {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #3b82f6, stop:1 #2563eb);"
+        "   background: %1;"
         "   color: white;"
         "   border: none;"
         "   border-radius: 12px;"
@@ -173,13 +182,14 @@ void ProductsPage::setupUI()
         "   font-weight: 600;"
         "}"
         "QPushButton:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #2563eb, stop:1 #1d4ed8);"
+        "   background: %2;"
         "}"
         "QPushButton:pressed {"
-        "   background: #1d4ed8;"
+        "   background: %3;"
         "}"
-    );
+    ).arg(theme.primaryColor().name(),
+          theme.primaryHoverColor().name(),
+          theme.primaryPressedColor().name()));
     connect(btnRefresh, &QPushButton::clicked, this, &ProductsPage::loadProducts);
 
     buttonLayout->addWidget(btnRefresh);
@@ -187,38 +197,37 @@ void ProductsPage::setupUI()
 
     mainLayout->addLayout(buttonLayout);
 
-    // Zone de scroll pour les cartes de produits
     scrollArea = new QScrollArea(this);
     scrollArea->setWidgetResizable(true);
     scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    scrollArea->setStyleSheet(
+    scrollArea->setStyleSheet(QString(
         "QScrollArea {"
         "   border: none;"
         "   background: transparent;"
         "}"
         "QScrollBar:vertical {"
-        "   background: #f7fafc;"
+        "   background: %1;"
         "   width: 12px;"
         "   border-radius: 6px;"
         "   margin: 0px;"
         "}"
         "QScrollBar::handle:vertical {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, "
-        "   stop:0 #667eea, stop:1 #764ba2);"
+        "   background: %2;"
         "   border-radius: 6px;"
         "   min-height: 30px;"
         "}"
         "QScrollBar::handle:vertical:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, "
-        "   stop:0 #5568d3, stop:1 #6b3f8f);"
+        "   background: %3;"
         "}"
-    );
+    ).arg(theme.surfaceAltColor().name(),
+          theme.primaryColor().name(),
+          theme.primaryHoverColor().name()));
 
     productsContainer = new QWidget();
     productsContainer->setStyleSheet("background: transparent;");
     productsGrid = new QGridLayout(productsContainer);
-    productsGrid->setSpacing(20);
+    productsGrid->setSpacing(24);
     productsGrid->setContentsMargins(0, 0, 0, 0);
 
     scrollArea->setWidget(productsContainer);
@@ -227,65 +236,96 @@ void ProductsPage::setupUI()
 
 void ProductsPage::applyStyles()
 {
-    setStyleSheet(
+    ThemeManager& theme = ThemeManager::instance();
+    setStyleSheet(QString(
         "#productsPage {"
-        "   background: #f7fafc;"
+        "   background: %1;"
         "}"
-    );
+    ).arg(theme.backgroundColor().name()));
 }
 
 QWidget* ProductsPage::createProductCard(int productId, const QString &nom, const QString &description,
                                        const QString &imagePath, double prixVente, int stock, int seuilAlerte)
 {
+    ThemeManager& theme = ThemeManager::instance();
+    
     QWidget *card = new QWidget();
     card->setFixedSize(280, 360);
+    
+    QString cardGradient;
+    QString cardGradientHover;
+    QString shadowStyle;
+    
+    if (theme.currentTheme() == ThemeManager::LightMode) {
+        // Mode clair - gradients modernes avec ombres douces
+        cardGradient = "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #ffffff, stop:1 #fafbfc)";
+        cardGradientHover = "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #fcfdfe, stop:1 #f5f7fa)";
+        shadowStyle = "0px 4px 16px rgba(0, 0, 0, 0.08)";
+    } else {
+        // Mode sombre - gradients vibrants avec style professionnel
+        cardGradient = "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #1a2540, stop:1 #0f172a)";
+        cardGradientHover = "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #1f2d4a, stop:1 #151f36)";
+        shadowStyle = "0px 4px 24px rgba(0, 0, 0, 0.32)";
+    }
+    
     card->setStyleSheet(
-        "QWidget {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #667eea, stop:0.5 #764ba2, stop:1 #f093fb);"
-        "   border: none;"
+        QString("QWidget {"
+        "   background: %1;"
+        "   border: 1px solid %2;"
         "   border-radius: 16px;"
+        "   outline: none;"
         "}"
         "QWidget:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #5568d3, stop:0.5 #6b3f8f, stop:1 #e082e8);"
-        "}"
+        "   background: %3;"
+        "   border: 1px solid %4;"
+        "   outline: none;"
+        "}").arg(
+            cardGradient, 
+            (theme.currentTheme() == ThemeManager::LightMode) ? "#e5e7eb" : "#2a3f5f",
+            cardGradientHover,
+            (theme.currentTheme() == ThemeManager::LightMode) ? "#d1d5db" : "#3a5080"
+        )
     );
 
     QVBoxLayout *cardLayout = new QVBoxLayout(card);
-    cardLayout->setContentsMargins(3, 3, 3, 3);
+    cardLayout->setContentsMargins(8, 8, 8, 8);
     cardLayout->setSpacing(0);
 
     QWidget *innerCard = new QWidget();
-    innerCard->setStyleSheet(
-        "background: white;"
-        "border-radius: 13px;"
-    );
+    QString innerBg = (theme.currentTheme() == ThemeManager::LightMode) 
+        ? "white" 
+        : theme.surfaceAltColor().name();
+    innerCard->setStyleSheet(QString(
+        "background: %1;"
+        "border-radius: 12px;"
+        "border: none;"
+    ).arg(innerBg));
+    
     QVBoxLayout *innerLayout = new QVBoxLayout(innerCard);
     innerLayout->setContentsMargins(0, 0, 0, 0);
     innerLayout->setSpacing(0);
 
     QLabel *imageLabel = new QLabel(innerCard);
-    imageLabel->setFixedSize(274, 160);
+    imageLabel->setFixedSize(264, 160);
     imageLabel->setStyleSheet(
-        "border-top-left-radius: 13px;"
-        "border-top-right-radius: 13px;"
+        "border-top-left-radius: 12px;"
+        "border-top-right-radius: 12px;"
         "background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "stop:0 #fef3f4, stop:1 #f3e7ff);"
+        "stop:0 #f0f4ff, stop:0.5 #e8f2ff, stop:1 #f3e8ff);"
     );
 
     if (!imagePath.isEmpty() && QFile::exists(imagePath)) {
         QPixmap pixmap(imagePath);
-        imageLabel->setPixmap(pixmap.scaled(274, 160, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        imageLabel->setPixmap(pixmap.scaled(264, 160, Qt::KeepAspectRatio, Qt::SmoothTransformation));
         imageLabel->setAlignment(Qt::AlignCenter);
     } else {
         imageLabel->setText("📦");
         imageLabel->setAlignment(Qt::AlignCenter);
         imageLabel->setStyleSheet(
-            "border-top-left-radius: 13px;"
-            "border-top-right-radius: 13px;"
+            "border-top-left-radius: 12px;"
+            "border-top-right-radius: 12px;"
             "background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-            "stop:0 #fef3f4, stop:1 #f3e7ff);"
+            "stop:0 #f0f4ff, stop:0.5 #e8f2ff, stop:1 #f3e8ff);"
             "color: #cbd5e0;"
             "font-size: 48px;"
         );
@@ -294,17 +334,28 @@ QWidget* ProductsPage::createProductCard(int productId, const QString &nom, cons
     innerLayout->addWidget(imageLabel);
 
     QWidget *contentWidget = new QWidget();
-    contentWidget->setStyleSheet("background: white; border-bottom-left-radius: 13px; border-bottom-right-radius: 13px;");
+    QString contentBgColor = (theme.currentTheme() == ThemeManager::LightMode) 
+        ? "white" 
+        : theme.surfaceColor().name();
+    contentWidget->setStyleSheet(QString(
+        "background: %1; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;").arg(contentBgColor));
+    
     QVBoxLayout *contentLayout = new QVBoxLayout(contentWidget);
-    contentLayout->setContentsMargins(16, 14, 16, 14);
-    contentLayout->setSpacing(6);
+    contentLayout->setContentsMargins(16, 16, 16, 14);
+    contentLayout->setSpacing(8);
 
     QLabel *nameLabel = new QLabel(nom, contentWidget);
+    
+    QString nameColor = (theme.currentTheme() == ThemeManager::LightMode) 
+        ? "#1f2937"
+        : theme.textColor().name();
+    
     nameLabel->setStyleSheet(
-        "font-size: 16px;"
+        QString("font-size: 15px;"
         "font-weight: 700;"
-        "color: #1a202c;"
+        "color: %1;"
         "margin: 0;"
+        "line-height: 1.4;").arg(nameColor)
     );
     nameLabel->setWordWrap(true);
     nameLabel->setMaximumHeight(40);
@@ -312,10 +363,10 @@ QWidget* ProductsPage::createProductCard(int productId, const QString &nom, cons
 
     QLabel *priceLabel = new QLabel(QString("€%1").arg(QString::number(prixVente, 'f', 2)), contentWidget);
     priceLabel->setStyleSheet(
-        "font-size: 18px;"
+        QString("font-size: 20px;"
         "font-weight: 800;"
-        "color: #1a202c;"
-        "margin: 0;"
+        "color: %1;"
+        "margin: 2px 0px 0px 0px;").arg(nameColor)
     );
     contentLayout->addWidget(priceLabel);
 
@@ -330,150 +381,168 @@ QWidget* ProductsPage::createProductCard(int productId, const QString &nom, cons
     stockWidget->setStyleSheet(QString(
         "background: %1;"
         "border-radius: 8px;"
-        "padding: 4px 10px;"
+        "padding: 6px 12px;"
     ).arg(stockBg));
-    stockWidget->setMaximumWidth(120);
+    stockWidget->setMaximumWidth(130);
     
     QHBoxLayout *stockLayout = new QHBoxLayout(stockWidget);
     stockLayout->setContentsMargins(0, 0, 0, 0);
     
     QLabel *stockLabel = new QLabel(stockText, stockWidget);
     stockLabel->setStyleSheet(QString(
-        "font-size: 12px;"
+        "font-size: 13px;"
         "font-weight: 600;"
         "color: %1;"
         "margin: 0;"
         "background: transparent;"
+        "letter-spacing: 0.3px;"
     ).arg(stockColor));
     stockLayout->addWidget(stockLabel);
     
     contentLayout->addWidget(stockWidget);
 
     QLabel *descLabel = new QLabel(description, contentWidget);
+    
+    QString descColor = (theme.currentTheme() == ThemeManager::LightMode)
+        ? "#6b7280"
+        : theme.textSecondaryColor().name();
+    
     descLabel->setStyleSheet(
-        "font-size: 12px;"
-        "color: #718096;"
-        "margin: 0;"
-        "line-height: 1.3;"
+        QString("font-size: 12px;"
+        "color: %1;"
+        "margin: 2px 0px 0px 0px;"
+        "line-height: 1.5;").arg(descColor)
     );
     descLabel->setWordWrap(true);
-    descLabel->setMaximumHeight(60); // Augmenter la hauteur pour voir plus de texte
+    descLabel->setMaximumHeight(60);
     contentLayout->addWidget(descLabel);
 
     contentLayout->addStretch();
 
     QHBoxLayout *actionLayout = new QHBoxLayout();
-    actionLayout->setContentsMargins(4, 4, 4, 4);
+    actionLayout->setContentsMargins(0, 4, 0, 0);
     actionLayout->setSpacing(6);
 
     if (userRole != "VENDEUR") {
         QPushButton *editBtn = new QPushButton("✏️", contentWidget);
-        editBtn->setFixedSize(24, 24);
+        editBtn->setFixedSize(32, 32);
         editBtn->setCursor(Qt::PointingHandCursor);
         editBtn->setToolTip("Modifier");
         editBtn->setStyleSheet(
             "QPushButton {"
-            "   background: #3b82f6;"
+            "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+            "   stop:0 #667eea, stop:1 #764ba2);"
             "   color: white;"
-            "   border: 2px solid #3b82f6;"
-            "   border-radius: 6px;"
-            "   font-size: 12px;"
+            "   border: none;"
+            "   border-radius: 8px;"
+            "   font-size: 14px;"
             "   font-weight: bold;"
+            "   padding: 0px;"
+            "   outline: none;"
             "}"
             "QPushButton:hover {"
-            "   background: #2563eb;"
-            "   border-color: #2563eb;"
-            "   transform: scale(1.1);"
+            "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+            "   stop:0 #5568d3, stop:1 #6a3a8a);"
+            "   outline: none;"
             "}"
             "QPushButton:pressed {"
-            "   background: #1d4ed8;"
-            "   border-color: #1d4ed8;"
+            "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+            "   stop:0 #4556b8, stop:1 #5a2a7a);"
+            "   outline: none;"
             "}"
         );
         connect(editBtn, &QPushButton::clicked, this, [this, productId]() { onEditProduct(productId); });
 
         QPushButton *deleteBtn = new QPushButton("🗑️", contentWidget);
-        deleteBtn->setFixedSize(24, 24);
+        deleteBtn->setFixedSize(32, 32);
         deleteBtn->setCursor(Qt::PointingHandCursor);
         deleteBtn->setToolTip("Supprimer");
         deleteBtn->setStyleSheet(
             "QPushButton {"
-            "   background: #ef4444;"
+            "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+            "   stop:0 #f56565, stop:1 #e53e3e);"
             "   color: white;"
-            "   border: 2px solid #ef4444;"
-            "   border-radius: 6px;"
-            "   font-size: 12px;"
+            "   border: none;"
+            "   border-radius: 8px;"
+            "   font-size: 14px;"
             "   font-weight: bold;"
+            "   padding: 0px;"
+            "   outline: none;"
             "}"
             "QPushButton:hover {"
-            "   background: #dc2626;"
-            "   border-color: #dc2626;"
-            "   transform: scale(1.1);"
+            "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+            "   stop:0 #e53e3e, stop:1 #c53030);"
+            "   outline: none;"
             "}"
             "QPushButton:pressed {"
-            "   background: #b91c1c;"
-            "   border-color: #b91c1c;"
+            "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+            "   stop:0 #c53030, stop:1 #742a2a);"
+            "   outline: none;"
             "}"
         );
         connect(deleteBtn, &QPushButton::clicked, this, [this, productId]() { onDeleteProduct(productId); });
 
-        actionLayout->addStretch();
         actionLayout->addWidget(editBtn);
         actionLayout->addWidget(deleteBtn);
     } else {
-        // Pour les vendeurs, ajouter des contrôles de quantité et bouton commander
         QWidget *quantityWidget = new QWidget(contentWidget);
         QHBoxLayout *quantityLayout = new QHBoxLayout(quantityWidget);
         quantityLayout->setContentsMargins(0, 0, 0, 0);
-        quantityLayout->setSpacing(4);
+        quantityLayout->setSpacing(6);
 
-        QPushButton *minusBtn = new QPushButton("-", quantityWidget);
-        minusBtn->setFixedSize(24, 24);
+        QPushButton *minusBtn = new QPushButton("−", quantityWidget);
+        minusBtn->setFixedSize(32, 32);
         minusBtn->setCursor(Qt::PointingHandCursor);
         minusBtn->setStyleSheet(
             "QPushButton {"
             "   background: #e5e7eb;"
             "   color: #374151;"
             "   border: none;"
-            "   border-radius: 6px;"
-            "   font-size: 14px;"
+            "   border-radius: 8px;"
+            "   font-size: 16px;"
             "   font-weight: bold;"
+            "   outline: none;"
             "}"
             "QPushButton:hover {"
             "   background: #d1d5db;"
+            "   outline: none;"
             "}"
             "QPushButton:pressed {"
             "   background: #9ca3af;"
+            "   outline: none;"
             "}"
         );
 
         QLabel *quantityLabel = new QLabel("0", quantityWidget);
         quantityLabel->setStyleSheet(
             "font-size: 14px;"
-            "font-weight: bold;"
+            "font-weight: 700;"
             "color: #1f2937;"
-            "min-width: 30px;"
+            "min-width: 40px;"
             "text-align: center;"
         );
         quantityLabel->setAlignment(Qt::AlignCenter);
 
         QPushButton *plusBtn = new QPushButton("+", quantityWidget);
-        plusBtn->setFixedSize(24, 24);
+        plusBtn->setFixedSize(32, 32);
         plusBtn->setCursor(Qt::PointingHandCursor);
         plusBtn->setStyleSheet(
             "QPushButton {"
             "   background: #e5e7eb;"
             "   color: #374151;"
             "   border: none;"
-            "   border-radius: 6px;"
-            "   font-size: 14px;"
+            "   border-radius: 8px;"
+            "   font-size: 16px;"
             "   font-weight: bold;"
+            "   outline: none;"
             "}"
             "QPushButton:hover {"
             "   background: #d1d5db;"
+            "   outline: none;"
             "}"
             "QPushButton:pressed {"
             "   background: #9ca3af;"
+            "   outline: none;"
             "}"
         );
 
@@ -481,12 +550,9 @@ QWidget* ProductsPage::createProductCard(int productId, const QString &nom, cons
         quantityLayout->addWidget(quantityLabel);
         quantityLayout->addWidget(plusBtn);
 
-        // Connecter les signaux pour gérer la quantité dans le panier
-        connect(minusBtn, &QPushButton::clicked, this, [this, productId, nom, prixVente, quantityLabel]() {
+        connect(minusBtn, &QPushButton::clicked, this, [this, productId, quantityLabel]() {
             if (orderDialog) {
                 orderDialog->removeProduct(productId, 1);
-                // Mettre à jour le label avec la quantité actuelle dans le panier
-                // Pour simplifier, on peut recalculer ou garder une référence
                 int currentQty = quantityLabel->text().toInt();
                 if (currentQty > 0) {
                     quantityLabel->setText(QString::number(currentQty - 1));
@@ -494,11 +560,11 @@ QWidget* ProductsPage::createProductCard(int productId, const QString &nom, cons
             }
         });
 
-        connect(plusBtn, &QPushButton::clicked, this, [this, productId, nom, prixVente, quantityLabel, stock]() {
+        connect(plusBtn, &QPushButton::clicked, this, [this, productId, quantityLabel, stock, nom, prixVente]() {
             if (orderDialog) {
                 int currentQty = quantityLabel->text().toInt();
                 if (currentQty + 1 <= stock) {
-                    orderDialog->addProduct(productId, nom, prixVente, 1);
+                    orderDialog->addProduct(productId, nom, prixVente, currentQty + 1);
                     quantityLabel->setText(QString::number(currentQty + 1));
                 } else {
                     QMessageBox::warning(this, "Stock insuffisant", 

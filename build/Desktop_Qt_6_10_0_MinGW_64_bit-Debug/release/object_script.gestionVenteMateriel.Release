@@ -13,8 +13,10 @@ release/productdialog.o
 release/productspage.o
 release/sidebar.o
 release/stylesheet.o
+release/thememanager.o
 release/userdialog.o
 release/userspage.o
+release/qrc_resources.o
 release/moc_cashpage.o
 release/moc_clientdialog.o
 release/moc_clientspage.o
@@ -27,5 +29,6 @@ release/moc_paymentspage.o
 release/moc_productdialog.o
 release/moc_productspage.o
 release/moc_sidebar.o
+release/moc_thememanager.o
 release/moc_userdialog.o
 release/moc_userspage.o

@@ -24,6 +24,7 @@ SOURCES += \
     productspage.cpp \
     sidebar.cpp \
     stylesheet.cpp \
+    thememanager.cpp \
     userdialog.cpp \
     userspage.cpp
 
@@ -42,11 +43,15 @@ HEADERS += \
     productspage.h \
     sidebar.h \
     stylesheet.h \
+    thememanager.h \
     userdialog.h \
     userspage.h
 
 FORMS += \
     mainwindow.ui
+
+RESOURCES += \
+    resources.qrc
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

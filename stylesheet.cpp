@@ -1,22 +1,20 @@
 #include "stylesheet.h"
+#include "thememanager.h"
 
-// Couleurs primaires
-const QString StyleSheet::PRIMARY = "#2563eb";
-const QString StyleSheet::SECONDARY = "#64748b";
-const QString StyleSheet::ACCENT = "#8b5cf6";
+const QString StyleSheet::PRIMARY = "#4b9eff";
+const QString StyleSheet::SECONDARY = "#7a8fa3";
+const QString StyleSheet::ACCENT = "#7c5cff";
 
-// Couleurs fonctionnelles
-const QString StyleSheet::SUCCESS = "#10b981";
-const QString StyleSheet::WARNING = "#f59e0b";
-const QString StyleSheet::ERROR = "#ef4444";
-const QString StyleSheet::INFO = "#3b82f6";
+const QString StyleSheet::SUCCESS = "#26d07c";
+const QString StyleSheet::WARNING = "#ff9d3c";
+const QString StyleSheet::ERROR = "#ff6b6b";
+const QString StyleSheet::INFO = "#00d4ff";
 
-// Neutres
-const QString StyleSheet::BACKGROUND = "#f8fafc";
-const QString StyleSheet::SURFACE = "#ffffff";
-const QString StyleSheet::BORDER = "#e2e8f0";
-const QString StyleSheet::TEXT_PRIMARY = "#0f172a";
-const QString StyleSheet::TEXT_SECONDARY = "#64748b";
+const QString StyleSheet::BACKGROUND = "#0d1b2a";
+const QString StyleSheet::SURFACE = "#1a2a3a";
+const QString StyleSheet::BORDER = "#2d4456";
+const QString StyleSheet::TEXT_PRIMARY = "#f0f7ff";
+const QString StyleSheet::TEXT_SECONDARY = "#b0c4de";
 
 // Typographie
 const QString StyleSheet::FONT_FAMILY = "Segoe UI, system-ui, -apple-system, sans-serif";
@@ -25,6 +23,15 @@ StyleSheet::StyleSheet() {}
 
 QString StyleSheet::getStyleSheet()
 {
+    ThemeManager& theme = ThemeManager::instance();
+    
+    QString bgColor = theme.backgroundColor().name();
+    QString surfaceColor_str = theme.surfaceColor().name();
+    QString textColor_str = theme.textColor().name();
+    QString textSecondary = theme.textSecondaryColor().name();
+    QString borderColor_str = theme.borderColor().name();
+    QString primaryColor_str = theme.primaryColor().name();
+    
     return QString(
         "* {"
         "   font-family: %1;"
@@ -45,116 +52,126 @@ QString StyleSheet::getStyleSheet()
         "   background-color: %2;"
         "}"
         ""
-        "/* Cartes dashboard avec glassmorphism */"
+        "/* Modern dashboard cards with sophisticated dark mode support */"
         "#dashboardCard {"
-        "   background: rgba(30, 41, 59, 0.7);"
-        "   border: 1px solid rgba(255, 255, 255, 0.1);"
-        "   border-radius: 18px;"
-        "   min-height: 180px;"
-        "   max-height: 220px;"
+        "   background: %4;"
+        "   border: 1px solid %5;"
+        "   border-radius: 16px;"
+        "   min-height: 240px;"
+        "   max-height: 280px;"
+        "   padding: 0px;"
+        "   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);"
         "}"
 
         "#dashboardCard:hover {"
-        "   background: rgba(30, 41, 59, 0.85);"
-        "   border-color: rgba(255, 255, 255, 0.2);"
+        "   background: %5;"
+        "   border-color: %6;"
+        "   transform: translateY(-4px);"
         "}"
         ""
-        "/* Dégradé violet avec glassmorphism */"
+        "/* Subtle gradient overlays for color variety with improved visibility */"
         "#dashboardCard[colorClass=\"purple\"] {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "       stop:0 rgba(124, 58, 237, 0.6), stop:1 rgba(167, 139, 250, 0.5));"
-        "   border: 1px solid rgba(124, 58, 237, 0.3);"
+        "   background: linear-gradient(135deg, rgba(124, 92, 255, 0.15) 0%, rgba(147, 112, 255, 0.08) 100%), %4;"
+        "   border: 1.5px solid rgba(124, 92, 255, 0.4);"
         "}"
 
         "#dashboardCard[colorClass=\"purple\"]:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "       stop:0 rgba(124, 58, 237, 0.8), stop:1 rgba(167, 139, 250, 0.7));"
-        "   border-color: rgba(124, 58, 237, 0.6);"
+        "   background: linear-gradient(135deg, rgba(124, 92, 255, 0.25) 0%, rgba(147, 112, 255, 0.15) 100%), %4;"
+        "   border-color: rgba(124, 92, 255, 0.6);"
         "}"
         ""
-        "/* Dégradé orange avec glassmorphism */"
         "#dashboardCard[colorClass=\"orange\"] {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "       stop:0 rgba(249, 115, 22, 0.6), stop:1 rgba(251, 146, 60, 0.5));"
-        "   border: 1px solid rgba(249, 115, 22, 0.3);"
+        "   background: linear-gradient(135deg, rgba(255, 157, 60, 0.15) 0%, rgba(255, 179, 102, 0.08) 100%), %4;"
+        "   border: 1.5px solid rgba(255, 157, 60, 0.4);"
         "}"
 
         "#dashboardCard[colorClass=\"orange\"]:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "       stop:0 rgba(249, 115, 22, 0.8), stop:1 rgba(251, 146, 60, 0.7));"
-        "   border-color: rgba(249, 115, 22, 0.6);"
+        "   background: linear-gradient(135deg, rgba(255, 157, 60, 0.25) 0%, rgba(255, 179, 102, 0.15) 100%), %4;"
+        "   border-color: rgba(255, 157, 60, 0.6);"
         "}"
         ""
-        "/* Dégradé rose avec glassmorphism */"
         "#dashboardCard[colorClass=\"pink\"] {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "       stop:0 rgba(219, 39, 119, 0.6), stop:1 rgba(244, 114, 182, 0.5));"
-        "   border: 1px solid rgba(219, 39, 119, 0.3);"
+        "   background: linear-gradient(135deg, rgba(255, 107, 107, 0.15) 0%, rgba(255, 136, 136, 0.08) 100%), %4;"
+        "   border: 1.5px solid rgba(255, 107, 107, 0.4);"
         "}"
 
         "#dashboardCard[colorClass=\"pink\"]:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "       stop:0 rgba(219, 39, 119, 0.8), stop:1 rgba(244, 114, 182, 0.7));"
-        "   border-color: rgba(219, 39, 119, 0.6);"
+        "   background: linear-gradient(135deg, rgba(255, 107, 107, 0.25) 0%, rgba(255, 136, 136, 0.15) 100%), %4;"
+        "   border-color: rgba(255, 107, 107, 0.6);"
         "}"
         ""
-        "/* Dégradé cyan avec glassmorphism */"
         "#dashboardCard[colorClass=\"cyan\"] {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "       stop:0 rgba(8, 145, 178, 0.6), stop:1 rgba(34, 211, 238, 0.5));"
-        "   border: 1px solid rgba(8, 145, 178, 0.3);"
+        "   background: linear-gradient(135deg, rgba(0, 212, 255, 0.15) 0%, rgba(0, 230, 255, 0.08) 100%), %4;"
+        "   border: 1.5px solid rgba(0, 212, 255, 0.4);"
         "}"
 
         "#dashboardCard[colorClass=\"cyan\"]:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "       stop:0 rgba(8, 145, 178, 0.8), stop:1 rgba(34, 211, 238, 0.7));"
-        "   border-color: rgba(8, 145, 178, 0.6);"
+        "   background: linear-gradient(135deg, rgba(0, 212, 255, 0.25) 0%, rgba(0, 230, 255, 0.15) 100%), %4;"
+        "   border-color: rgba(0, 212, 255, 0.6);"
         "}"
         ""
-        "/* Icônes et textes en blanc sur fond coloré */"
         "#dashboardIcon {"
-        "   color: rgba(255, 255, 255, 0.98);"
+        "   color: %3;"
         "   background-color: transparent;"
+        "   font-size: 48px;"
         "}"
         ""
         "#dashboardCardTitle {"
-        "   color: rgba(255, 255, 255, 0.92);"
-        "   font-weight: 500;"
+        "   color: %8;"
+        "   font-weight: 600;"
+        "   letter-spacing: 0.8px;"
         "   text-transform: uppercase;"
+        "   font-size: 11px;"
         "}"
         ""
         "#dashboardCardValue {"
-        "   color: rgb(255, 255, 255);"
+        "   color: %3;"
         "   font-weight: 700;"
+        "   font-size: 36px;"
         "}"
         ""
-        "/* Panel analytique amélioré */"
+        "/* Premium analytics panel */"
         "#analyticsPanel {"
         "   background-color: %4;"
         "   border: 1px solid %5;"
-        "   border-radius: 18px;"
+        "   border-radius: 16px;"
+        "   padding: 0px;"
         "}"
         ""
-        "/* Titres avec meilleure hiérarchie */"
+        "#chartFrame {"
+        "   background-color: %4;"
+        "   border: 1px solid %5;"
+        "   border-radius: 14px;"
+        "   padding: 0px;"
+        "}"
+        ""
+        "/* Enhanced typography hierarchy */"
         "#titleH1 {"
         "   color: %3;"
         "   font-weight: 700;"
+        "   letter-spacing: -0.8px;"
+        "   font-size: 32px;"
         "}"
         ""
         "#titleH2 {"
         "   color: %3;"
         "   font-weight: 600;"
+        "   letter-spacing: 0.5px;"
+        "   font-size: 20px;"
         "}"
         ""
         "#subtitle {"
         "   color: %8;"
         "   font-weight: 400;"
+        "   line-height: 1.6;"
+        "   font-size: 14px;"
         "}"
         ""
         "#placeholder {"
         "   color: %8;"
         "   font-weight: 400;"
         "   padding: 100px 40px;"
+        "   font-size: 16px;"
         "}"
         ""
         "/* ==== SIDEBAR STYLES ==== */"
@@ -172,36 +189,35 @@ QString StyleSheet::getStyleSheet()
         "   padding: 14px 0;"
         "}"
         ""
-        "/* Boutons sidebar modernisés */"
         "#sidebarButton {"
         "   background-color: transparent;"
         "   color: %8;"
         "   border: none;"
-        "   border-radius: 10px;"
-        "   padding: 13px 16px;"
+        "   border-radius: 12px;"
+        "   padding: 14px 18px;"
         "   text-align: left;"
         "   font-size: 14px;"
         "   font-weight: 500;"
-        "   margin: 2px 0;"
+        "   margin: 3px 0;"
+        "   transition: all 0.2s ease;"
         "}"
         ""
         "#sidebarButton:hover {"
-        "   background-color: %2;"
+        "   background-color: rgba(75, 158, 255, 0.1);"
         "   color: %3;"
         "}"
         ""
         "#sidebarButton:checked {"
-        "   background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, "
-        "       stop:0 %6, stop:1 %7);"
-        "   color: %4;"
+        "   background-color: %6;"
+        "   color: white;"
         "   font-weight: 600;"
         "}"
     ).arg(FONT_FAMILY)      // %1
-     .arg(BACKGROUND)       // %2
-     .arg(TEXT_PRIMARY)     // %3
-     .arg(SURFACE)          // %4
-     .arg(BORDER)           // %5
-     .arg(PRIMARY)          // %6
+     .arg(bgColor)          // %2
+     .arg(textColor_str)    // %3
+     .arg(surfaceColor_str) // %4
+     .arg(borderColor_str)  // %5
+     .arg(primaryColor_str) // %6
      .arg(ACCENT)           // %7
-     .arg(TEXT_SECONDARY);  // %8
+     .arg(textSecondary);   // %8
 }

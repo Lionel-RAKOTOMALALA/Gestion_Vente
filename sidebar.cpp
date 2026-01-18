@@ -1,4 +1,5 @@
 #include "sidebar.h"
+#include "thememanager.h"
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QSignalMapper>
@@ -18,6 +19,72 @@ Sidebar::Sidebar(const QString &userRole, QWidget *parent) : QWidget(parent)
     appTitle->setAlignment(Qt::AlignCenter);
     layout->addWidget(appTitle);
     layout->addSpacing(30); // Espace après le titre
+
+    // Appliquer les styles initaux du sidebar
+    QString sidebarStyle = QString(
+        "#sidebar { "
+        "background-color: %1; "
+        "border-right: 1px solid %2; "
+        "}"
+        "#sidebarTitle { "
+        "font-size: 18px; "
+        "font-weight: bold; "
+        "color: %3; "
+        "margin: 16px 0; "
+        "}"
+        "#sidebarButton { "
+        "background-color: transparent; "
+        "color: %3; "
+        "border: 2px solid transparent; "
+        "border-radius: 8px; "
+        "padding: 10px 12px; "
+        "font-size: 13px; "
+        "text-align: left; "
+        "font-weight: 500; "
+        "}"
+        "#sidebarButton:hover { "
+        "background-color: %4; "
+        "border: 2px solid %5; "
+        "}"
+        "#sidebarButton:checked { "
+        "background-color: %5; "
+        "color: white; "
+        "border: 2px solid %5; "
+        "}"
+        "#themeButton { "
+        "background-color: %4; "
+        "color: %3; "
+        "border: 2px solid %5; "
+        "border-radius: 8px; "
+        "padding: 10px 12px; "
+        "font-size: 13px; "
+        "font-weight: bold; "
+        "}"
+        "#themeButton:hover { "
+        "background-color: %5; "
+        "color: white; "
+        "}"
+        "#logoutButton { "
+        "background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #ef4444, stop:1 #dc2626); "
+        "color: white; "
+        "border: none; "
+        "border-radius: 8px; "
+        "padding: 10px 12px; "
+        "font-weight: bold; "
+        "font-size: 13px; "
+        "}"
+        "#logoutButton:hover { "
+        "background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #dc2626, stop:1 #991b1b); "
+        "}"
+    ).arg(
+        ThemeManager::instance().backgroundColor().name(),
+        ThemeManager::instance().borderColor().name(),
+        ThemeManager::instance().textColor().name(),
+        ThemeManager::instance().surfaceColor().name(),
+        ThemeManager::instance().primaryColor().name()
+    );
+    
+    setStyleSheet(sidebarStyle);
 
     mapper = new QSignalMapper(this);
     connect(mapper, SIGNAL(mappedInt(int)), this, SIGNAL(pageChanged(int)));
@@ -86,8 +153,77 @@ Sidebar::Sidebar(const QString &userRole, QWidget *parent) : QWidget(parent)
     if (QPushButton *firstBtn = qobject_cast<QPushButton*>(layout->itemAt(2)->widget())) {
         firstBtn->setChecked(true);
     }
+}
 
-    if (QPushButton *firstBtn = qobject_cast<QPushButton*>(layout->itemAt(2)->widget())) {
-        firstBtn->setChecked(true);
-    }
+void Sidebar::updateTheme()
+{
+    ThemeManager& theme = ThemeManager::instance();
+    
+    QString sidebarStyle = QString(
+        "#sidebar {"
+        "   background-color: %1;"
+        "   border-right: 1px solid %2;"
+        "}"
+        "#sidebarTitle {"
+        "   font-size: 18px;"
+        "   font-weight: bold;"
+        "   color: %3;"
+        "   margin: 16px 0;"
+        "}"
+        "#sidebarButton {"
+        "   background-color: transparent;"
+        "   color: %3;"
+        "   border: 2px solid transparent;"
+        "   border-radius: 8px;"
+        "   padding: 10px 12px;"
+        "   font-size: 13px;"
+        "   text-align: left;"
+        "   font-weight: 500;"
+        "}"
+        "#sidebarButton:hover {"
+        "   background-color: %4;"
+        "   border: 2px solid %5;"
+        "}"
+        "#sidebarButton:checked {"
+        "   background-color: %5;"
+        "   color: white;"
+        "   border: 2px solid %5;"
+        "}"
+        "#themeButton {"
+        "   background-color: %4;"
+        "   color: %3;"
+        "   border: 2px solid %5;"
+        "   border-radius: 8px;"
+        "   padding: 10px 12px;"
+        "   font-size: 13px;"
+        "   font-weight: bold;"
+        "}"
+        "#themeButton:hover {"
+        "   background-color: %5;"
+        "   color: white;"
+        "}"
+        "#logoutButton {"
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 %6, stop:1 %7);"
+        "   color: white;"
+        "   border: none;"
+        "   border-radius: 8px;"
+        "   padding: 10px 12px;"
+        "   font-weight: bold;"
+        "   font-size: 13px;"
+        "}"
+        "#logoutButton:hover {"
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 %7, stop:1 %8);"
+        "}"
+    ).arg(
+        theme.backgroundColor().name(),
+        theme.borderColor().name(),
+        theme.textColor().name(),
+        theme.surfaceColor().name(),
+        theme.primaryColor().name(),
+        theme.dangerColor().name(),
+        theme.dangerHoverColor().name(),
+        theme.dangerPressedColor().name()
+    );
+    
+    setStyleSheet(sidebarStyle);
 }

@@ -13,8 +13,10 @@ debug/productdialog.o
 debug/productspage.o
 debug/sidebar.o
 debug/stylesheet.o
+debug/thememanager.o
 debug/userdialog.o
 debug/userspage.o
+debug/qrc_resources.o
 debug/moc_cashpage.o
 debug/moc_clientdialog.o
 debug/moc_clientspage.o
@@ -27,5 +29,6 @@ debug/moc_paymentspage.o
 debug/moc_productdialog.o
 debug/moc_productspage.o
 debug/moc_sidebar.o
+debug/moc_thememanager.o
 debug/moc_userdialog.o
 debug/moc_userspage.o

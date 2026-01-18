@@ -9,6 +9,7 @@
 #include <QSqlError>
 #include <QSqlRecord>
 #include <QScrollBar>
+#include "thememanager.h"
 
 UsersPage::UsersPage(QWidget *parent) : QFrame(parent), currentPage(0), itemsPerPage(5), totalItems(0)
 {
@@ -50,11 +51,12 @@ void UsersPage::setupUI()
     
     QLabel *title = new QLabel("Gestion des Utilisateurs", this);
     title->setObjectName("titleH1");
-    title->setStyleSheet(
+    ThemeManager& theme = ThemeManager::instance();
+    title->setStyleSheet(QString(
         "font-size: 32px;"
         "font-weight: 700;"
-        "color: #1a202c;"
-        "letter-spacing: -0.5px;"
+        "color: %1;"
+        "letter-spacing: -0.5px;").arg(theme.textColor().name())
     );
     
     headerLayout->addWidget(icon);
@@ -183,86 +185,27 @@ void UsersPage::setupUI()
     tableWidget->verticalHeader()->setVisible(false);
     tableWidget->horizontalHeader()->setStretchLastSection(true);
     tableWidget->setShowGrid(false);
-    tableWidget->verticalHeader()->setDefaultSectionSize(60);
+    tableWidget->verticalHeader()->setDefaultSectionSize(50);
     tableWidget->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     
+    // Style du tableau identique à clientspage
     tableWidget->setStyleSheet(
         "QTableWidget {"
-        "   background: white;"
-        "   border: 1px solid #e2e8f0;"
-        "   border-radius: 16px;"
-        "   font-size: 14px;"
-        "   color: #2d3748;"
+        "   background: #0f172a;"
+        "   color: #e2e8f0;"
+        "   gridline-color: #334155;"
         "}"
         "QTableWidget::item {"
-        "   padding: 16px 16px;"
-        "   border-bottom: 1px solid #f7fafc;"
-        "}"
-        "QTableWidget::item:selected {"
-        "   background: #edf2f7;"
-        "   color: #2d3748;"
+        "   color: #f1f5f9;"
+        "   padding: 8px;"
         "}"
         "QHeaderView::section {"
-        "   background: #f8fafc;"
-        "   color: #4a5568;"
-        "   padding: 18px 16px;"
+        "   background: #1e293b;"
+        "   color: #e2e8f0;"
+        "   padding: 8px;"
         "   border: none;"
-        "   border-bottom: 2px solid #e2e8f0;"
-        "   font-weight: 700;"
-        "   font-size: 12px;"
-        "   text-transform: uppercase;"
-        "   letter-spacing: 0.8px;"
-        "   text-align: left;"
-        "}"
-        "QHeaderView::section:first {"
-        "   border-top-left-radius: 16px;"
-        "}"
-        "QHeaderView::section:last {"
-        "   border-top-right-radius: 16px;"
-        "}"
-        "QScrollBar:vertical {"
-        "   background: #f7fafc;"
-        "   width: 12px;"
-        "   border-radius: 6px;"
-        "   margin: 0px;"
-        "}"
-        "QScrollBar::handle:vertical {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, "
-        "   stop:0 #667eea, stop:1 #764ba2);"
-        "   border-radius: 6px;"
-        "   min-height: 30px;"
-        "}"
-        "QScrollBar::handle:vertical:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, "
-        "   stop:0 #5568d3, stop:1 #6b3f8f);"
-        "}"
-        "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {"
-        "   height: 0px;"
-        "}"
-        "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {"
-        "   background: none;"
-        "}"
-        "QScrollBar:horizontal {"
-        "   background: #f7fafc;"
-        "   height: 12px;"
-        "   border-radius: 6px;"
-        "   margin: 0px;"
-        "}"
-        "QScrollBar::handle:horizontal {"
-        "   background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
-        "   stop:0 #667eea, stop:1 #764ba2);"
-        "   border-radius: 6px;"
-        "   min-width: 30px;"
-        "}"
-        "QScrollBar::handle:horizontal:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
-        "   stop:0 #5568d3, stop:1 #6b3f8f);"
-        "}"
-        "QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {"
-        "   width: 0px;"
-        "}"
-        "QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {"
-        "   background: none;"
+        "   border-right: 1px solid #334155;"
+        "   font-weight: bold;"
         "}"
     );
 
@@ -270,13 +213,13 @@ void UsersPage::setupUI()
     tableWidget->setColumnCount(headers.size());
     tableWidget->setHorizontalHeaderLabels(headers);
 
-    tableWidget->setColumnWidth(0, 80);
-    tableWidget->setColumnWidth(1, 250);
-    tableWidget->setColumnWidth(2, 320);
-    tableWidget->setColumnWidth(3, 150);
-    tableWidget->setColumnWidth(4, 200);
+    tableWidget->setColumnWidth(0, 60);
+    tableWidget->setColumnWidth(1, 200);
+    tableWidget->setColumnWidth(2, 250);
+    tableWidget->setColumnWidth(3, 130);
+    tableWidget->setColumnWidth(4, 120);
 
-    tableWidget->verticalHeader()->setDefaultSectionSize(35);
+    tableWidget->verticalHeader()->setDefaultSectionSize(50);
 
     mainLayout->addWidget(tableWidget);
 
@@ -353,11 +296,16 @@ void UsersPage::setupUI()
 
 void UsersPage::applyStyles()
 {
-    setStyleSheet(
+    ThemeManager& theme = ThemeManager::instance();
+    QString bgColor = (theme.currentTheme() == ThemeManager::LightMode) 
+        ? "#f7fafc" 
+        : theme.backgroundColor().name();
+    
+    setStyleSheet(QString(
         "#usersPage {"
-        "   background: #f7fafc;"
+        "   background: %1;"
         "}"
-    );
+    ).arg(bgColor));
 }
 
 QWidget* UsersPage::createRoleBadge(const QString &role)
@@ -400,55 +348,58 @@ QWidget* UsersPage::createActionButtons(int userId)
 {
     QWidget *actionWidget = new QWidget();
     QHBoxLayout *actionLayout = new QHBoxLayout(actionWidget);
-    actionLayout->setContentsMargins(4, 4, 4, 4);
-    actionLayout->setSpacing(6);
+    actionLayout->setContentsMargins(2, 2, 2, 2);
+    actionLayout->setSpacing(4);
+    actionLayout->setAlignment(Qt::AlignCenter);
 
     QPushButton *editBtn = new QPushButton("✏️", this);
-    editBtn->setFixedSize(24, 24);
+    editBtn->setFixedSize(22, 22);
     editBtn->setCursor(Qt::PointingHandCursor);
     editBtn->setToolTip("Modifier l'utilisateur");
     editBtn->setStyleSheet(
         "QPushButton {"
-        "   background: #3b82f6;"
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+        "   stop:0 #667eea, stop:1 #764ba2);"
         "   color: white;"
-        "   border: 2px solid #3b82f6;"
-        "   border-radius: 6px;"
-        "   font-size: 12px;"
+        "   border: none;"
+        "   border-radius: 4px;"
+        "   font-size: 11px;"
         "   font-weight: bold;"
+        "   padding: 0px;"
         "}"
         "QPushButton:hover {"
-        "   background: #2563eb;"
-        "   border-color: #2563eb;"
-        "   transform: scale(1.1);"
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+        "   stop:0 #5568d3, stop:1 #6a3a8a);"
         "}"
         "QPushButton:pressed {"
-        "   background: #1d4ed8;"
-        "   border-color: #1d4ed8;"
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+        "   stop:0 #4556b8, stop:1 #5a2a7a);"
         "}"
     );
     connect(editBtn, &QPushButton::clicked, this, [this, userId]() { onEditUser(userId); });
 
     QPushButton *deleteBtn = new QPushButton("🗑️", this);
-    deleteBtn->setFixedSize(24, 24);
+    deleteBtn->setFixedSize(22, 22);
     deleteBtn->setCursor(Qt::PointingHandCursor);
     deleteBtn->setToolTip("Supprimer l'utilisateur");
     deleteBtn->setStyleSheet(
         "QPushButton {"
-        "   background: #ef4444;"
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+        "   stop:0 #f56565, stop:1 #e53e3e);"
         "   color: white;"
-        "   border: 2px solid #ef4444;"
-        "   border-radius: 6px;"
-        "   font-size: 12px;"
+        "   border: none;"
+        "   border-radius: 4px;"
+        "   font-size: 11px;"
         "   font-weight: bold;"
+        "   padding: 0px;"
         "}"
         "QPushButton:hover {"
-        "   background: #dc2626;"
-        "   border-color: #dc2626;"
-        "   transform: scale(1.1);"
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+        "   stop:0 #e53e3e, stop:1 #c53030);"
         "}"
         "QPushButton:pressed {"
-        "   background: #b91c1c;"
-        "   border-color: #b91c1c;"
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+        "   stop:0 #c53030, stop:1 #742a2a);"
         "}"
     );
     connect(deleteBtn, &QPushButton::clicked, this, [this, userId]() { onDeleteUser(userId); });

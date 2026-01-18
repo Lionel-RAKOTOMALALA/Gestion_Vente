@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RCC version="1.0">
+    <qresource prefix="/themes">
+        <file>themes/light_theme.qss</file>
+        <file>themes/dark_theme.qss</file>
+    </qresource>
+</RCC>

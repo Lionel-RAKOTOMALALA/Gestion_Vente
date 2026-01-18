@@ -9,6 +9,7 @@
 #include <QSqlError>
 #include <QSqlRecord>
 #include <QScrollBar>
+#include "thememanager.h"
 
 ClientsPage::ClientsPage(QWidget *parent) : QFrame(parent), currentPage(0), itemsPerPage(5), totalItems(0)
 {
@@ -50,11 +51,12 @@ void ClientsPage::setupUI()
     
     QLabel *title = new QLabel("Gestion des Clients", this);
     title->setObjectName("titleH1");
-    title->setStyleSheet(
+    ThemeManager& theme = ThemeManager::instance();
+    title->setStyleSheet(QString(
         "font-size: 32px;"
         "font-weight: 700;"
-        "color: #1a202c;"
-        "letter-spacing: -0.5px;"
+        "color: %1;"
+        "letter-spacing: -0.5px;").arg(theme.textColor().name())
     );
     
     headerLayout->addWidget(icon);
@@ -68,23 +70,6 @@ void ClientsPage::setupUI()
     searchInput = new QLineEdit(this);
     searchInput->setPlaceholderText("Rechercher par nom ou email...");
     searchInput->setMinimumHeight(48);
-    searchInput->setStyleSheet(
-        "QLineEdit {"
-        "   border: 1px solid #e2e8f0;"
-        "   border-radius: 12px;"
-        "   padding: 12px 20px;"
-        "   font-size: 15px;"
-        "   background: white;"
-        "   color: #2d3748;"
-        "}"
-        "QLineEdit:focus {"
-        "   border: 2px solid #667eea;"
-        "   outline: none;"
-        "}"
-        "QLineEdit::placeholder {"
-        "   color: #a0aec0;"
-        "}"
-    );
     connect(searchInput, &QLineEdit::textChanged, this, &ClientsPage::onSearchTextChanged);
 
     searchLayout->addWidget(searchInput, 1);
@@ -96,49 +81,11 @@ void ClientsPage::setupUI()
     btnAdd = new QPushButton("+ Ajouter", this);
     btnAdd->setMinimumHeight(48);
     btnAdd->setCursor(Qt::PointingHandCursor);
-    btnAdd->setStyleSheet(
-        "QPushButton {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #3b82f6, stop:1 #2563eb);"
-        "   color: white;"
-        "   border: none;"
-        "   border-radius: 12px;"
-        "   padding: 12px 32px;"
-        "   font-size: 15px;"
-        "   font-weight: 600;"
-        "}"
-        "QPushButton:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #2563eb, stop:1 #1d4ed8);"
-        "}"
-        "QPushButton:pressed {"
-        "   background: #1d4ed8;"
-        "}"
-    );
     connect(btnAdd, &QPushButton::clicked, this, &ClientsPage::onAddClient);
 
     btnRefresh = new QPushButton("Actualiser", this);
     btnRefresh->setMinimumHeight(48);
     btnRefresh->setCursor(Qt::PointingHandCursor);
-    btnRefresh->setStyleSheet(
-        "QPushButton {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #3b82f6, stop:1 #2563eb);"
-        "   color: white;"
-        "   border: none;"
-        "   border-radius: 12px;"
-        "   padding: 12px 32px;"
-        "   font-size: 15px;"
-        "   font-weight: 600;"
-        "}"
-        "QPushButton:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #2563eb, stop:1 #1d4ed8);"
-        "}"
-        "QPushButton:pressed {"
-        "   background: #1d4ed8;"
-        "}"
-    );
     connect(btnRefresh, &QPushButton::clicked, this, &ClientsPage::loadClients);
 
     buttonLayout->addWidget(btnAdd);
@@ -158,100 +105,20 @@ void ClientsPage::setupUI()
     tableWidget->verticalHeader()->setDefaultSectionSize(60);
     tableWidget->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     
-    tableWidget->setStyleSheet(
-        "QTableWidget {"
-        "   background: white;"
-        "   border: 1px solid #e2e8f0;"
-        "   border-radius: 16px;"
-        "   font-size: 14px;"
-        "   color: #2d3748;"
-        "}"
-        "QTableWidget::item {"
-        "   padding: 16px 16px;"
-        "   border-bottom: 1px solid #f7fafc;"
-        "}"
-        "QTableWidget::item:selected {"
-        "   background: #edf2f7;"
-        "   color: #2d3748;"
-        "}"
-        "QHeaderView::section {"
-        "   background: #f8fafc;"
-        "   color: #4a5568;"
-        "   padding: 18px 16px;"
-        "   border: none;"
-        "   border-bottom: 2px solid #e2e8f0;"
-        "   font-weight: 700;"
-        "   font-size: 12px;"
-        "   text-transform: uppercase;"
-        "   letter-spacing: 0.8px;"
-        "   text-align: left;"
-        "}"
-        "QHeaderView::section:first {"
-        "   border-top-left-radius: 16px;"
-        "}"
-        "QHeaderView::section:last {"
-        "   border-top-right-radius: 16px;"
-        "}"
-        "QScrollBar:vertical {"
-        "   background: #f7fafc;"
-        "   width: 12px;"
-        "   border-radius: 6px;"
-        "   margin: 0px;"
-        "}"
-        "QScrollBar::handle:vertical {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, "
-        "   stop:0 #667eea, stop:1 #764ba2);"
-        "   border-radius: 6px;"
-        "   min-height: 30px;"
-        "}"
-        "QScrollBar::handle:vertical:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, "
-        "   stop:0 #5568d3, stop:1 #6b3f8f);"
-        "}"
-        "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {"
-        "   height: 0px;"
-        "}"
-        "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {"
-        "   background: none;"
-        "}"
-        "QScrollBar:horizontal {"
-        "   background: #f7fafc;"
-        "   height: 12px;"
-        "   border-radius: 6px;"
-        "   margin: 0px;"
-        "}"
-        "QScrollBar::handle:horizontal {"
-        "   background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
-        "   stop:0 #667eea, stop:1 #764ba2);"
-        "   border-radius: 6px;"
-        "   min-width: 30px;"
-        "}"
-        "QScrollBar::handle:horizontal:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
-        "   stop:0 #5568d3, stop:1 #6b3f8f);"
-        "}"
-        "QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {"
-        "   width: 0px;"
-        "}"
-        "QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {"
-        "   background: none;"
-        "}"
-    );
-
     QStringList headers = {"ID", "NOM", "PRÉNOM", "TÉLÉPHONE", "EMAIL", "ADRESSE", "ACTIONS"};
     tableWidget->setColumnCount(headers.size());
     tableWidget->setHorizontalHeaderLabels(headers);
 
-    tableWidget->setColumnWidth(0, 80);
-    tableWidget->setColumnWidth(1, 150);
-    tableWidget->setColumnWidth(2, 150);
-    tableWidget->setColumnWidth(3, 150);
-    tableWidget->setColumnWidth(4, 200);
-    tableWidget->setColumnWidth(5, 250);
-    tableWidget->setColumnWidth(6, 200);
+    tableWidget->setColumnWidth(0, 60);
+    tableWidget->setColumnWidth(1, 130);
+    tableWidget->setColumnWidth(2, 130);
+    tableWidget->setColumnWidth(3, 130);
+    tableWidget->setColumnWidth(4, 170);
+    tableWidget->setColumnWidth(5, 150);
+    tableWidget->setColumnWidth(6, 150);
 
     // Définir la hauteur des lignes pour accommoder les boutons
-    tableWidget->verticalHeader()->setDefaultSectionSize(35);
+    tableWidget->verticalHeader()->setDefaultSectionSize(50);
 
     mainLayout->addWidget(tableWidget);
 
@@ -287,7 +154,28 @@ void ClientsPage::setupUI()
     btnPrevPage = new QPushButton("<", this);
     btnPrevPage->setFixedSize(45, 45);
     btnPrevPage->setCursor(Qt::PointingHandCursor);
-    btnPrevPage->setStyleSheet(btnFirstPage->styleSheet());
+    btnPrevPage->setStyleSheet(
+        "QPushButton {"
+        "   background: white;"
+        "   color: #4a5568;"
+        "   border: 2px solid #e2e8f0;"
+        "   border-radius: 10px;"
+        "   font-size: 18px;"
+        "   font-weight: bold;"
+        "   padding: 0px;"
+        "}"
+        "QPushButton:hover {"
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+        "   stop:0 #667eea, stop:1 #764ba2);"
+        "   color: white;"
+        "   border-color: transparent;"
+        "}"
+        "QPushButton:disabled {"
+        "   background: #f7fafc;"
+        "   color: #cbd5e0;"
+        "   border-color: #e2e8f0;"
+        "}"
+    );
     connect(btnPrevPage, &QPushButton::clicked, this, &ClientsPage::onPreviousPage);
     
     lblPageInfo = new QLabel("Page 1 / 1", this);
@@ -306,7 +194,28 @@ void ClientsPage::setupUI()
     btnNextPage = new QPushButton(">", this);
     btnNextPage->setFixedSize(45, 45);
     btnNextPage->setCursor(Qt::PointingHandCursor);
-    btnNextPage->setStyleSheet(btnFirstPage->styleSheet());
+    btnNextPage->setStyleSheet(
+        "QPushButton {"
+        "   background: white;"
+        "   color: #4a5568;"
+        "   border: 2px solid #e2e8f0;"
+        "   border-radius: 10px;"
+        "   font-size: 18px;"
+        "   font-weight: bold;"
+        "   padding: 0px;"
+        "}"
+        "QPushButton:hover {"
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+        "   stop:0 #667eea, stop:1 #764ba2);"
+        "   color: white;"
+        "   border-color: transparent;"
+        "}"
+        "QPushButton:disabled {"
+        "   background: #f7fafc;"
+        "   color: #cbd5e0;"
+        "   border-color: #e2e8f0;"
+        "}"
+    );
     connect(btnNextPage, &QPushButton::clicked, this, &ClientsPage::onNextPage);
     
     btnLastPage = new QPushButton(">|", this);
@@ -328,66 +237,87 @@ void ClientsPage::setupUI()
 
 void ClientsPage::applyStyles()
 {
-    setStyleSheet(
+    // Mode sombre forcé
+    setStyleSheet(QString(
         "#clientsPage {"
-        "   background: #f7fafc;"
+        "   background: %1;"
         "}"
-    );
+        "QTableWidget {"
+        "   background: %1;"
+        "   color: #e2e8f0;"
+        "   gridline-color: #334155;"
+        "}"
+        "QTableWidget::item {"
+        "   color: #f1f5f9;"
+        "   padding: 8px;"
+        "}"
+        "QHeaderView::section {"
+        "   background: #1e293b;"
+        "   color: #e2e8f0;"
+        "   padding: 8px;"
+        "   border: none;"
+        "   border-right: 1px solid #334155;"
+        "   font-weight: bold;"
+        "}"
+    ).arg(ThemeManager::instance().backgroundColor().name()));
 }
 
 QWidget* ClientsPage::createActionButtons(int clientId)
 {
     QWidget *actionWidget = new QWidget();
     QHBoxLayout *actionLayout = new QHBoxLayout(actionWidget);
-    actionLayout->setContentsMargins(4, 4, 4, 4);
-    actionLayout->setSpacing(6);
+    actionLayout->setContentsMargins(2, 2, 2, 2);
+    actionLayout->setSpacing(4);
+    actionLayout->setAlignment(Qt::AlignCenter);
 
     QPushButton *editBtn = new QPushButton("✏️", this);
-    editBtn->setFixedSize(24, 24);
+    editBtn->setFixedSize(22, 22);
     editBtn->setCursor(Qt::PointingHandCursor);
     editBtn->setToolTip("Modifier le client");
     editBtn->setStyleSheet(
         "QPushButton {"
-        "   background: #3b82f6;"
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+        "   stop:0 #667eea, stop:1 #764ba2);"
         "   color: white;"
-        "   border: 2px solid #3b82f6;"
-        "   border-radius: 6px;"
-        "   font-size: 12px;"
+        "   border: none;"
+        "   border-radius: 4px;"
+        "   font-size: 11px;"
         "   font-weight: bold;"
+        "   padding: 0px;"
         "}"
         "QPushButton:hover {"
-        "   background: #2563eb;"
-        "   border-color: #2563eb;"
-        "   transform: scale(1.1);"
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+        "   stop:0 #5568d3, stop:1 #6a3a8a);"
         "}"
         "QPushButton:pressed {"
-        "   background: #1d4ed8;"
-        "   border-color: #1d4ed8;"
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+        "   stop:0 #4556b8, stop:1 #5a2a7a);"
         "}"
     );
     connect(editBtn, &QPushButton::clicked, this, [this, clientId]() { onEditClient(clientId); });
 
     QPushButton *deleteBtn = new QPushButton("🗑️", this);
-    deleteBtn->setFixedSize(24, 24);
+    deleteBtn->setFixedSize(22, 22);
     deleteBtn->setCursor(Qt::PointingHandCursor);
     deleteBtn->setToolTip("Supprimer le client");
     deleteBtn->setStyleSheet(
         "QPushButton {"
-        "   background: #ef4444;"
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+        "   stop:0 #f56565, stop:1 #e53e3e);"
         "   color: white;"
-        "   border: 2px solid #ef4444;"
-        "   border-radius: 6px;"
-        "   font-size: 12px;"
+        "   border: none;"
+        "   border-radius: 4px;"
+        "   font-size: 11px;"
         "   font-weight: bold;"
+        "   padding: 0px;"
         "}"
         "QPushButton:hover {"
-        "   background: #dc2626;"
-        "   border-color: #dc2626;"
-        "   transform: scale(1.1);"
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+        "   stop:0 #e53e3e, stop:1 #c53030);"
         "}"
         "QPushButton:pressed {"
-        "   background: #b91c1c;"
-        "   border-color: #b91c1c;"
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+        "   stop:0 #c53030, stop:1 #742a2a);"
         "}"
     );
     connect(deleteBtn, &QPushButton::clicked, this, [this, clientId]() { onDeleteClient(clientId); });
@@ -574,5 +504,11 @@ void ClientsPage::onDeleteClient(int clientId)
 void ClientsPage::onSearchTextChanged(const QString &text)
 {
     currentPage = 0;
+    loadClients();
+}
+
+void ClientsPage::onThemeChanged()
+{
+    applyStyles();
     loadClients();
 }

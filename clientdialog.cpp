@@ -27,7 +27,7 @@ void ClientDialog::setupUI()
 
     // Titre
     QLabel *title = new QLabel(currentClientId == -1 ? "➕ Nouveau Client" : "✏️ Modifier le Client", this);
-    title->setStyleSheet("font-size: 20px; font-weight: bold; color: #2c3e50;");
+    title->setStyleSheet("font-size: 20px; font-weight: bold;");
     mainLayout->addWidget(title);
 
     // Formulaire
@@ -54,25 +54,6 @@ void ClientDialog::setupUI()
     txtAdresse->setPlaceholderText("Adresse complète");
     txtAdresse->setMinimumHeight(40);
 
-    // Style des inputs
-    QString inputStyle = 
-        "QLineEdit {"
-        "   border: 2px solid #e0e0e0;"
-        "   border-radius: 6px;"
-        "   padding: 8px 12px;"
-        "   font-size: 14px;"
-        "   background: white;"
-        "}"
-        "QLineEdit:focus {"
-        "   border-color: #3498db;"
-        "}";
-    
-    txtNom->setStyleSheet(inputStyle);
-    txtPrenom->setStyleSheet(inputStyle);
-    txtEmail->setStyleSheet(inputStyle);
-    txtTelephone->setStyleSheet(inputStyle);
-    txtAdresse->setStyleSheet(inputStyle);
-
     formLayout->addRow("Nom *", txtNom);
     formLayout->addRow("Prénom", txtPrenom);
     formLayout->addRow("Email *", txtEmail);
@@ -87,38 +68,10 @@ void ClientDialog::setupUI()
 
     btnSave = new QPushButton("💾 Enregistrer", this);
     btnSave->setMinimumHeight(45);
-    btnSave->setStyleSheet(
-        "QPushButton {"
-        "   background: #27ae60;"
-        "   color: white;"
-        "   border: none;"
-        "   border-radius: 6px;"
-        "   padding: 10px 30px;"
-        "   font-size: 15px;"
-        "   font-weight: bold;"
-        "}"
-        "QPushButton:hover {"
-        "   background: #229954;"
-        "}"
-    );
     connect(btnSave, &QPushButton::clicked, this, &ClientDialog::onSave);
 
     btnCancel = new QPushButton("❌ Annuler", this);
     btnCancel->setMinimumHeight(45);
-    btnCancel->setStyleSheet(
-        "QPushButton {"
-        "   background: #95a5a6;"
-        "   color: white;"
-        "   border: none;"
-        "   border-radius: 6px;"
-        "   padding: 10px 30px;"
-        "   font-size: 15px;"
-        "   font-weight: bold;"
-        "}"
-        "QPushButton:hover {"
-        "   background: #7f8c8d;"
-        "}"
-    );
     connect(btnCancel, &QPushButton::clicked, this, &ClientDialog::onCancel);
 
     buttonLayout->addStretch();
@@ -126,8 +79,6 @@ void ClientDialog::setupUI()
     buttonLayout->addWidget(btnCancel);
 
     mainLayout->addLayout(buttonLayout);
-
-    setStyleSheet("QDialog { background: #f5f6fa; }");
 }
 
 void ClientDialog::loadClient(int clientId)
