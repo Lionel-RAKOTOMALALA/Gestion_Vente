@@ -6,12 +6,14 @@ debug/dashboardpage.o
 debug/logindialog.o
 debug/main.o
 debug/mainwindow.o
-debug/orderdialog_new.o
+debug/orderdialog.o
 debug/orderspage.o
 debug/paymentspage.o
 debug/productdialog.o
 debug/productspage.o
+debug/receiptgenerator.o
 debug/sidebar.o
+debug/smtpclient.o
 debug/stylesheet.o
 debug/thememanager.o
 debug/userdialog.o
@@ -29,6 +31,7 @@ debug/moc_paymentspage.o
 debug/moc_productdialog.o
 debug/moc_productspage.o
 debug/moc_sidebar.o
+debug/moc_smtpclient.o
 debug/moc_thememanager.o
 debug/moc_userdialog.o
 debug/moc_userspage.o

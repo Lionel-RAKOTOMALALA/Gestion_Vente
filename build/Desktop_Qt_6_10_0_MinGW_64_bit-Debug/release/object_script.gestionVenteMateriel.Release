@@ -6,12 +6,14 @@ release/dashboardpage.o
 release/logindialog.o
 release/main.o
 release/mainwindow.o
-release/orderdialog_new.o
+release/orderdialog.o
 release/orderspage.o
 release/paymentspage.o
 release/productdialog.o
 release/productspage.o
+release/receiptgenerator.o
 release/sidebar.o
+release/smtpclient.o
 release/stylesheet.o
 release/thememanager.o
 release/userdialog.o
@@ -29,6 +31,7 @@ release/moc_paymentspage.o
 release/moc_productdialog.o
 release/moc_productspage.o
 release/moc_sidebar.o
+release/moc_smtpclient.o
 release/moc_thememanager.o
 release/moc_userdialog.o
 release/moc_userspage.o
