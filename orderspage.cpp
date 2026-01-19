@@ -166,8 +166,6 @@ void OrdersPage::setupUI()
         headers << "Actions";
     }
     ordersTable->setHorizontalHeaderLabels(headers);
-    ordersTable->horizontalHeader()->setStretchLastSection(true);
-    ordersTable->setAlternatingRowColors(false);
     ordersTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     ordersTable->setSelectionMode(QAbstractItemView::SingleSelection);
     ordersTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -182,10 +180,12 @@ void OrdersPage::setupUI()
         "   background: #0f172a;"
         "   color: #e2e8f0;"
         "   gridline-color: #334155;"
+        "   border: none;"
         "}"
         "QTableWidget::item {"
         "   color: #f1f5f9;"
         "   padding: 8px;"
+        "   border: none;"
         "}"
         "QHeaderView::section {"
         "   background: #1e293b;"
@@ -209,7 +209,7 @@ void OrdersPage::setupUI()
         ordersTable->setColumnWidth(7, 150);
     }
 
-    ordersTable->verticalHeader()->setDefaultSectionSize(60);
+    ordersTable->verticalHeader()->setDefaultSectionSize(50);
 
     connect(ordersTable, &QTableWidget::cellDoubleClicked, this, &OrdersPage::onViewOrderDetails);
 

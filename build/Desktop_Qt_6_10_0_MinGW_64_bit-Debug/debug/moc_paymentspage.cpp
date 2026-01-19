@@ -7,6 +7,7 @@
 *****************************************************************************/
 
 #include "../../../paymentspage.h"
+#include <QtGui/qtextcursor.h>
 #include <QtCore/qmetatype.h>
 
 #include <QtCore/qtmochelpers.h>
@@ -38,10 +39,23 @@ template <> constexpr inline auto PaymentsPage::qt_create_metaobjectdata<qt_meta
 {
     namespace QMC = QtMocConstants;
     QtMocHelpers::StringRefStorage qt_stringData {
-        "PaymentsPage"
+        "PaymentsPage",
+        "onSearchTextChanged",
+        "",
+        "text",
+        "onStatusFilterChanged",
+        "status"
     };
 
     QtMocHelpers::UintData qt_methods {
+        // Slot 'onSearchTextChanged'
+        QtMocHelpers::SlotData<void(const QString &)>(1, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::QString, 3 },
+        }}),
+        // Slot 'onStatusFilterChanged'
+        QtMocHelpers::SlotData<void(const QString &)>(4, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::QString, 5 },
+        }}),
     };
     QtMocHelpers::UintData qt_properties {
     };
@@ -63,10 +77,13 @@ Q_CONSTINIT const QMetaObject PaymentsPage::staticMetaObject = { {
 void PaymentsPage::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
 {
     auto *_t = static_cast<PaymentsPage *>(_o);
-    (void)_t;
-    (void)_c;
-    (void)_id;
-    (void)_a;
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        switch (_id) {
+        case 0: _t->onSearchTextChanged((*reinterpret_cast<std::add_pointer_t<QString>>(_a[1]))); break;
+        case 1: _t->onStatusFilterChanged((*reinterpret_cast<std::add_pointer_t<QString>>(_a[1]))); break;
+        default: ;
+        }
+    }
 }
 
 const QMetaObject *PaymentsPage::metaObject() const
@@ -85,6 +102,18 @@ void *PaymentsPage::qt_metacast(const char *_clname)
 int PaymentsPage::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 {
     _id = QFrame::qt_metacall(_c, _id, _a);
+    if (_id < 0)
+        return _id;
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        if (_id < 2)
+            qt_static_metacall(this, _c, _id, _a);
+        _id -= 2;
+    }
+    if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
+        if (_id < 2)
+            *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
+        _id -= 2;
+    }
     return _id;
 }
 QT_WARNING_POP

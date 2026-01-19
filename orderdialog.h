@@ -43,6 +43,9 @@ private slots:
     void onValidateOrder();
     void onCancelOrder();
     void onRemoveItem(int row);
+    void onContinueToPayment();
+    void onPreviousFromPayment();
+    void onConfirmPayment();
 
 signals:
     void orderSaved();
@@ -51,6 +54,7 @@ private:
     void setupUI();
     void setupClientForm();
     void setupOrderSummary();
+    void setupPaymentForm();
     void updateTotal();
     void updateTable();
     void createTablesIfNotExist();
@@ -75,6 +79,12 @@ private:
     QPushButton *previousBtn;
     QPushButton *validateBtn;
     QPushButton *cancelBtn;
+    
+    // Étape 3: Paiement
+    QWidget *paymentWidget;
+    QLabel *paymentTotalLabel;
+    QPushButton *confirmPaymentBtn;
+    QPushButton *previousPaymentBtn;
 
     QMap<int, OrderItem> orderItems; // productId -> OrderItem
     double totalAmount;

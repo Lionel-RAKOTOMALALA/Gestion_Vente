@@ -27,6 +27,7 @@ void ProductDialog::setupUI()
     setWindowTitle(currentProductId == -1 ? "Ajouter un produit" : "Modifier le produit");
     setMinimumWidth(600);
     setModal(true);
+    setStyleSheet("QDialog { background: #0f172a; }");
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setSpacing(20);
@@ -34,7 +35,7 @@ void ProductDialog::setupUI()
 
     // Titre
     QLabel *title = new QLabel(currentProductId == -1 ? "➕ Nouveau Produit" : "✏️ Modifier le Produit", this);
-    title->setStyleSheet("font-size: 20px; font-weight: bold; color: #2c3e50;");
+    title->setStyleSheet("font-size: 20px; font-weight: bold; color: #f1f5f9;");
     mainLayout->addWidget(title);
 
     // Formulaire
@@ -75,9 +76,10 @@ void ProductDialog::setupUI()
     lblImagePreview = new QLabel(this);
     lblImagePreview->setFixedSize(120, 120);
     lblImagePreview->setStyleSheet(
-        "border: 2px dashed #bdc3c7; "
+        "border: 2px dashed #334155; "
         "border-radius: 8px; "
-        "background: #ecf0f1;"
+        "background: #1e293b;"
+        "color: #94a3b8;"
     );
     lblImagePreview->setAlignment(Qt::AlignCenter);
     lblImagePreview->setText("📷\nAucune image");
@@ -86,15 +88,16 @@ void ProductDialog::setupUI()
     btnSelectImage->setMinimumHeight(40);
     btnSelectImage->setStyleSheet(
         "QPushButton {"
-        "   background: #3498db;"
+        "   background: #667eea;"
         "   color: white;"
         "   border: none;"
         "   border-radius: 6px;"
         "   padding: 8px 16px;"
         "   font-size: 14px;"
+        "   font-weight: bold;"
         "}"
         "QPushButton:hover {"
-        "   background: #2980b9;"
+        "   background: #5568d3;"
         "}"
     );
     connect(btnSelectImage, &QPushButton::clicked, this, &ProductDialog::onSelectImage);
@@ -106,14 +109,19 @@ void ProductDialog::setupUI()
     // Style des inputs
     QString inputStyle =
         "QLineEdit, QTextEdit {"
-        "   border: 2px solid #e0e0e0;"
+        "   border: 2px solid #334155;"
         "   border-radius: 6px;"
         "   padding: 8px 12px;"
         "   font-size: 14px;"
-        "   background: white;"
+        "   background: #1e293b;"
+        "   color: #f1f5f9;"
         "}"
         "QLineEdit:focus, QTextEdit:focus {"
-        "   border-color: #3498db;"
+        "   border-color: #667eea;"
+        "   background: #1e293b;"
+        "}"
+        "QLineEdit::placeholder, QTextEdit::placeholder {"
+        "   color: #64748b;"
         "}";
 
     txtNom->setStyleSheet(inputStyle);
@@ -123,13 +131,31 @@ void ProductDialog::setupUI()
     txtStock->setStyleSheet(inputStyle);
     txtSeuilAlerte->setStyleSheet(inputStyle);
 
-    formLayout->addRow("Nom du produit *", txtNom);
-    formLayout->addRow("Description", txtDescription);
-    formLayout->addRow("Prix de vente (€) *", txtPrixVente);
-    formLayout->addRow("Prix d'achat (€)", txtPrixAchat);
-    formLayout->addRow("Stock *", txtStock);
-    formLayout->addRow("Seuil d'alerte", txtSeuilAlerte);
-    formLayout->addRow("Image du produit", imageLayout);
+    // Style des labels
+    QString labelStyle = "QLabel { color: #f1f5f9; }";
+    
+    QLabel *nomLabel = new QLabel("Nom du produit *", this);
+    nomLabel->setStyleSheet(labelStyle);
+    QLabel *descLabel = new QLabel("Description", this);
+    descLabel->setStyleSheet(labelStyle);
+    QLabel *prixVenteLabel = new QLabel("Prix de vente (€) *", this);
+    prixVenteLabel->setStyleSheet(labelStyle);
+    QLabel *prixAchatLabel = new QLabel("Prix d'achat (€)", this);
+    prixAchatLabel->setStyleSheet(labelStyle);
+    QLabel *stockLabel = new QLabel("Stock *", this);
+    stockLabel->setStyleSheet(labelStyle);
+    QLabel *seuilLabel = new QLabel("Seuil d'alerte", this);
+    seuilLabel->setStyleSheet(labelStyle);
+    QLabel *imageLabel = new QLabel("Image du produit", this);
+    imageLabel->setStyleSheet(labelStyle);
+
+    formLayout->addRow(nomLabel, txtNom);
+    formLayout->addRow(descLabel, txtDescription);
+    formLayout->addRow(prixVenteLabel, txtPrixVente);
+    formLayout->addRow(prixAchatLabel, txtPrixAchat);
+    formLayout->addRow(stockLabel, txtStock);
+    formLayout->addRow(seuilLabel, txtSeuilAlerte);
+    formLayout->addRow(imageLabel, imageLayout);
 
     mainLayout->addLayout(formLayout);
 
@@ -141,7 +167,7 @@ void ProductDialog::setupUI()
     btnSave->setMinimumHeight(45);
     btnSave->setStyleSheet(
         "QPushButton {"
-        "   background: #27ae60;"
+        "   background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #10b981, stop: 1 #059669);"
         "   color: white;"
         "   border: none;"
         "   border-radius: 6px;"
@@ -150,7 +176,10 @@ void ProductDialog::setupUI()
         "   font-weight: bold;"
         "}"
         "QPushButton:hover {"
-        "   background: #229954;"
+        "   background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #059669, stop: 1 #047857);"
+        "}"
+        "QPushButton:pressed {"
+        "   background: #047857;"
         "}"
     );
     connect(btnSave, &QPushButton::clicked, this, &ProductDialog::onSave);
@@ -159,16 +188,21 @@ void ProductDialog::setupUI()
     btnCancel->setMinimumHeight(45);
     btnCancel->setStyleSheet(
         "QPushButton {"
-        "   background: #95a5a6;"
-        "   color: white;"
-        "   border: none;"
+        "   background: transparent;"
+        "   color: #e53e3e;"
+        "   border: 2px solid #e53e3e;"
         "   border-radius: 6px;"
         "   padding: 10px 30px;"
         "   font-size: 15px;"
         "   font-weight: bold;"
         "}"
         "QPushButton:hover {"
-        "   background: #7f8c8d;"
+        "   background: #e53e3e;"
+        "   color: white;"
+        "}"
+        "QPushButton:pressed {"
+        "   background: #c53030;"
+        "   border-color: #c53030;"
         "}"
     );
     connect(btnCancel, &QPushButton::clicked, this, &ProductDialog::onCancel);
@@ -178,8 +212,6 @@ void ProductDialog::setupUI()
     buttonLayout->addWidget(btnCancel);
 
     mainLayout->addLayout(buttonLayout);
-
-    setStyleSheet("QDialog { background: #f5f6fa; }");
 }
 
 void ProductDialog::loadProduct(int productId)
@@ -206,14 +238,15 @@ void ProductDialog::updateImagePreview()
     if (!selectedImagePath.isEmpty() && QFile::exists(selectedImagePath)) {
         QPixmap pixmap(selectedImagePath);
         lblImagePreview->setPixmap(pixmap.scaled(120, 120, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-        lblImagePreview->setStyleSheet("border: 2px solid #27ae60; border-radius: 8px;");
+        lblImagePreview->setStyleSheet("border: 2px solid #10b981; border-radius: 8px;");
     } else {
         lblImagePreview->setPixmap(QPixmap());
         lblImagePreview->setText("📷\nAucune image");
         lblImagePreview->setStyleSheet(
-            "border: 2px dashed #bdc3c7; "
+            "border: 2px dashed #334155; "
             "border-radius: 8px; "
-            "background: #ecf0f1;"
+            "background: #1e293b; "
+            "color: #94a3b8;"
         );
     }
 }

@@ -16,6 +16,7 @@ OrderDialog::OrderDialog(int userId, QWidget *parent) :
     setModal(true);
     setMinimumWidth(700);
     setMinimumHeight(500);
+    setStyleSheet("background: #0f172a; color: #f1f5f9;");
 
     // Positionner le modal à droite de la fenêtre parente
     if (parent) {
@@ -39,6 +40,7 @@ OrderDialog::OrderDialog(int userId, const QString &commandeId, QWidget *parent)
     setModal(true);
     setMinimumWidth(700);
     setMinimumHeight(500);
+    setStyleSheet("background: #0f172a; color: #f1f5f9;");
 
     // Positionner le modal à droite de la fenêtre parente
     if (parent) {
@@ -86,6 +88,15 @@ void OrderDialog::createTablesIfNotExist()
                "total REAL NOT NULL, "
                "FOREIGN KEY(id_commande) REFERENCES COMMANDES(id_commande), "
                "FOREIGN KEY(id_produit) REFERENCES PRODUITS(id_produit))");
+
+    // Table PAIEMENTS
+    query.exec("CREATE TABLE IF NOT EXISTS PAIEMENTS ("
+               "id_paiement INTEGER PRIMARY KEY AUTOINCREMENT, "
+               "id_commande INTEGER NOT NULL, "
+               "montant REAL NOT NULL, "
+               "date_paiement DATETIME DEFAULT CURRENT_TIMESTAMP, "
+               "statut TEXT DEFAULT 'VALIDE' CHECK(statut IN ('VALIDE', 'ANNULE')), "
+               "FOREIGN KEY(id_commande) REFERENCES COMMANDES(id_commande))");
 }
 
 void OrderDialog::setupUI()
@@ -96,6 +107,7 @@ void OrderDialog::setupUI()
 
     setupClientForm();
     setupOrderSummary();
+    setupPaymentForm();
 
     // Commencer par l'étape 1 (client)
     stackedWidget->setCurrentIndex(0);
@@ -160,22 +172,48 @@ void OrderDialog::setupOrderSummary()
     QVBoxLayout *layout = new QVBoxLayout(orderWidget);
 
     QLabel *title = new QLabel("Récapitulatif de la commande", orderWidget);
-    title->setStyleSheet("font-size: 18px; font-weight: bold; margin-bottom: 20px;");
+    title->setStyleSheet("font-size: 18px; font-weight: bold; margin-bottom: 20px; color: #f1f5f9;");
     layout->addWidget(title);
 
     // Table pour afficher les produits
     orderTable = new QTableWidget(orderWidget);
     orderTable->setColumnCount(5);
     orderTable->setHorizontalHeaderLabels({"Produit", "Prix unitaire", "Quantité", "Total", "Actions"});
-    orderTable->horizontalHeader()->setStretchLastSection(true);
-    orderTable->setAlternatingRowColors(true);
+    orderTable->setColumnWidth(0, 150);
+    orderTable->setColumnWidth(1, 120);
+    orderTable->setColumnWidth(2, 100);
+    orderTable->setColumnWidth(3, 100);
+    orderTable->setColumnWidth(4, 120);
+    orderTable->verticalHeader()->setVisible(false);
+    orderTable->verticalHeader()->setDefaultSectionSize(70);
     orderTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    orderTable->setStyleSheet(
+        "QTableWidget {"
+        "   background: #0f172a;"
+        "   color: #e2e8f0;"
+        "   gridline-color: #334155;"
+        "   border: none;"
+        "}"
+        "QTableWidget::item {"
+        "   color: #f1f5f9;"
+        "   padding: 8px;"
+        "   border: none;"
+        "}"
+        "QHeaderView::section {"
+        "   background: #1e293b;"
+        "   color: #e2e8f0;"
+        "   padding: 8px;"
+        "   border: none;"
+        "   border-right: 1px solid #334155;"
+        "   font-weight: bold;"
+        "}"
+    );
 
     layout->addWidget(orderTable);
 
     // Total
     totalLabel = new QLabel("Total: 0.00 €", orderWidget);
-    totalLabel->setStyleSheet("font-weight: bold; font-size: 16px; margin: 10px 0;");
+    totalLabel->setStyleSheet("font-weight: bold; font-size: 16px; margin: 10px 0; color: #f1f5f9;");
     layout->addWidget(totalLabel);
 
     layout->addStretch();
@@ -185,21 +223,206 @@ void OrderDialog::setupOrderSummary()
     buttonLayout->addStretch();
 
     previousBtn = new QPushButton("Précédent", orderWidget);
+    previousBtn->setMinimumHeight(48);
+    previousBtn->setMinimumWidth(120);
+    previousBtn->setCursor(Qt::PointingHandCursor);
+    previousBtn->setStyleSheet(
+        "QPushButton {"
+        "   background: transparent;"
+        "   color: #667eea;"
+        "   border: 2px solid #667eea;"
+        "   border-radius: 10px;"
+        "   font-weight: 700;"
+        "   font-size: 14px;"
+        "   padding: 8px 20px;"
+        "}"
+        "QPushButton:hover {"
+        "   background: #667eea;"
+        "   color: white;"
+        "}"
+        "QPushButton:pressed {"
+        "   background: #5568d3;"
+        "}"
+    );
     connect(previousBtn, &QPushButton::clicked, this, &OrderDialog::onPreviousStep);
     buttonLayout->addWidget(previousBtn);
 
     QPushButton *cancelBtn2 = new QPushButton("Annuler", orderWidget);
+    cancelBtn2->setMinimumHeight(48);
+    cancelBtn2->setMinimumWidth(120);
+    cancelBtn2->setCursor(Qt::PointingHandCursor);
+    cancelBtn2->setStyleSheet(
+        "QPushButton {"
+        "   background: transparent;"
+        "   color: #e53e3e;"
+        "   border: 2px solid #e53e3e;"
+        "   border-radius: 10px;"
+        "   font-weight: 700;"
+        "   font-size: 14px;"
+        "   padding: 8px 20px;"
+        "}"
+        "QPushButton:hover {"
+        "   background: #e53e3e;"
+        "   color: white;"
+        "}"
+        "QPushButton:pressed {"
+        "   background: #c53030;"
+        "}"
+    );
     connect(cancelBtn2, &QPushButton::clicked, this, &OrderDialog::onCancelOrder);
     buttonLayout->addWidget(cancelBtn2);
 
-    validateBtn = new QPushButton("Valider la commande", orderWidget);
-    validateBtn->setStyleSheet("QPushButton { background-color: #4CAF50; color: white; padding: 8px 16px; border: none; border-radius: 4px; }");
-    connect(validateBtn, &QPushButton::clicked, this, &OrderDialog::onValidateOrder);
+    validateBtn = new QPushButton("Continuer vers paiement", orderWidget);
+    validateBtn->setMinimumHeight(48);
+    validateBtn->setMinimumWidth(140);
+    validateBtn->setCursor(Qt::PointingHandCursor);
+    validateBtn->setStyleSheet(
+        "QPushButton {"
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #10b981, stop:1 #059669);"
+        "   color: white;"
+        "   border: none;"
+        "   border-radius: 10px;"
+        "   font-weight: 700;"
+        "   font-size: 14px;"
+        "   padding: 8px 24px;"
+        "}"
+        "QPushButton:hover {"
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #059669, stop:1 #047857);"
+        "}"
+        "QPushButton:pressed {"
+        "   background: #047857;"
+        "}"
+    );
+    connect(validateBtn, &QPushButton::clicked, this, &OrderDialog::onContinueToPayment);
     buttonLayout->addWidget(validateBtn);
 
     layout->addLayout(buttonLayout);
 
     stackedWidget->addWidget(orderWidget);
+}
+
+void OrderDialog::setupPaymentForm()
+{
+    paymentWidget = new QWidget();
+    QVBoxLayout *layout = new QVBoxLayout(paymentWidget);
+
+    QLabel *title = new QLabel("💳 Paiement de la commande", paymentWidget);
+    title->setStyleSheet("font-size: 20px; font-weight: bold; margin-bottom: 40px; color: #f1f5f9;");
+    layout->addWidget(title);
+
+    // Afficher le montant total
+    paymentTotalLabel = new QLabel(paymentWidget);
+    paymentTotalLabel->setStyleSheet(
+        "QLabel {"
+        "   font-size: 32px;"
+        "   font-weight: bold;"
+        "   color: #10b981;"
+        "   text-align: center;"
+        "   padding: 20px;"
+        "   background: #1e293b;"
+        "   border-radius: 10px;"
+        "   border: 2px solid #334155;"
+        "}"
+    );
+    layout->addWidget(paymentTotalLabel);
+
+    // Espacer
+    layout->addSpacing(30);
+
+    // Label de confirmation
+    QLabel *confirmLabel = new QLabel("Le montant sera payé en espèces", paymentWidget);
+    confirmLabel->setStyleSheet(
+        "QLabel {"
+        "   font-size: 16px;"
+        "   color: #94a3b8;"
+        "   text-align: center;"
+        "}"
+    );
+    layout->addWidget(confirmLabel);
+
+    layout->addStretch();
+
+    // Boutons
+    QHBoxLayout *buttonLayout = new QHBoxLayout();
+    buttonLayout->addStretch();
+
+    previousPaymentBtn = new QPushButton("Précédent", paymentWidget);
+    previousPaymentBtn->setMinimumHeight(48);
+    previousPaymentBtn->setMinimumWidth(120);
+    previousPaymentBtn->setCursor(Qt::PointingHandCursor);
+    previousPaymentBtn->setStyleSheet(
+        "QPushButton {"
+        "   background: transparent;"
+        "   color: #667eea;"
+        "   border: 2px solid #667eea;"
+        "   border-radius: 10px;"
+        "   font-weight: 700;"
+        "   font-size: 14px;"
+        "   padding: 8px 20px;"
+        "}"
+        "QPushButton:hover {"
+        "   background: #667eea;"
+        "   color: white;"
+        "}"
+        "QPushButton:pressed {"
+        "   background: #5568d3;"
+        "}"
+    );
+    connect(previousPaymentBtn, &QPushButton::clicked, this, &OrderDialog::onPreviousFromPayment);
+    buttonLayout->addWidget(previousPaymentBtn);
+
+    QPushButton *cancelPaymentBtn = new QPushButton("Annuler", paymentWidget);
+    cancelPaymentBtn->setMinimumHeight(48);
+    cancelPaymentBtn->setMinimumWidth(120);
+    cancelPaymentBtn->setCursor(Qt::PointingHandCursor);
+    cancelPaymentBtn->setStyleSheet(
+        "QPushButton {"
+        "   background: transparent;"
+        "   color: #e53e3e;"
+        "   border: 2px solid #e53e3e;"
+        "   border-radius: 10px;"
+        "   font-weight: 700;"
+        "   font-size: 14px;"
+        "   padding: 8px 20px;"
+        "}"
+        "QPushButton:hover {"
+        "   background: #e53e3e;"
+        "   color: white;"
+        "}"
+        "QPushButton:pressed {"
+        "   background: #c53030;"
+        "}"
+    );
+    connect(cancelPaymentBtn, &QPushButton::clicked, this, &OrderDialog::onCancelOrder);
+    buttonLayout->addWidget(cancelPaymentBtn);
+
+    confirmPaymentBtn = new QPushButton("💰 Confirmer le paiement", paymentWidget);
+    confirmPaymentBtn->setMinimumHeight(48);
+    confirmPaymentBtn->setMinimumWidth(180);
+    confirmPaymentBtn->setCursor(Qt::PointingHandCursor);
+    confirmPaymentBtn->setStyleSheet(
+        "QPushButton {"
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #10b981, stop:1 #059669);"
+        "   color: white;"
+        "   border: none;"
+        "   border-radius: 10px;"
+        "   font-weight: 700;"
+        "   font-size: 15px;"
+        "   padding: 8px 30px;"
+        "}"
+        "QPushButton:hover {"
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #059669, stop:1 #047857);"
+        "}"
+        "QPushButton:pressed {"
+        "   background: #047857;"
+        "}"
+    );
+    connect(confirmPaymentBtn, &QPushButton::clicked, this, &OrderDialog::onConfirmPayment);
+    buttonLayout->addWidget(confirmPaymentBtn);
+
+    layout->addLayout(buttonLayout);
+
+    stackedWidget->addWidget(paymentWidget);
 }
 
 void OrderDialog::addProduct(int productId, const QString &productName, double unitPrice, int quantity)
@@ -266,18 +489,8 @@ void OrderDialog::onPreviousStep()
 
 void OrderDialog::onValidateOrder()
 {
-    if (!checkStocks()) {
-        QMessageBox::warning(this, "Stock insuffisant", 
-                           "Un ou plusieurs produits dans votre commande n'ont plus assez de stock disponible.");
-        return;
-    }
-    if (saveClientAndOrder()) {
-        QMessageBox::information(this, "Commande validée",
-                               QString("La commande a été créée avec succès pour un montant de %1 €.").arg(QString::number(totalAmount, 'f', 2)));
-        emit orderSaved();
-        reset(); // Réinitialiser complètement après validation
-        accept();
-    }
+    // Cette fonction est obsolète, elle est remplacée par onContinueToPayment() puis onConfirmPayment()
+    // Garder pour compatibilité au cas où elle serait appelée ailleurs
 }
 
 void OrderDialog::onCancelOrder()
@@ -340,11 +553,43 @@ void OrderDialog::updateTable()
         orderTable->setItem(row, 3, new QTableWidgetItem(QString::number(item.total, 'f', 2) + " €"));
 
         // Bouton de suppression
-        QPushButton *removeBtn = new QPushButton("Retirer", orderTable);
+        QWidget *actionWidget = new QWidget();
+        actionWidget->setStyleSheet("background: transparent;");
+        QHBoxLayout *actionLayout = new QHBoxLayout(actionWidget);
+        actionLayout->setContentsMargins(0, 0, 0, 0);
+        actionLayout->setSpacing(0);
+        actionLayout->setAlignment(Qt::AlignCenter);
+        
+        QPushButton *removeBtn = new QPushButton("🗑️");
+        removeBtn->setFixedSize(32, 32);
+        removeBtn->setCursor(Qt::PointingHandCursor);
+        removeBtn->setStyleSheet(
+            "QPushButton {"
+            "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+            "   stop:0 #f56565, stop:1 #e53e3e);"
+            "   color: white;"
+            "   border: none;"
+            "   font-size: 14px;"
+            "   font-weight: 700;"
+            "   outline: none;"
+            "   padding: 0px;"
+            "}"
+            "QPushButton:hover {"
+            "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+            "   stop:0 #e53e3e, stop:1 #c53030);"
+            "}"
+            "QPushButton:pressed {"
+            "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+            "   stop:0 #c53030, stop:1 #742a2a);"
+            "}"
+        );
         connect(removeBtn, &QPushButton::clicked, [this, row]() {
             onRemoveItem(row);
         });
-        orderTable->setCellWidget(row, 4, removeBtn);
+        
+        actionLayout->addWidget(removeBtn);
+        
+        orderTable->setCellWidget(row, 4, actionWidget);
 
         row++;
     }
@@ -410,6 +655,26 @@ bool OrderDialog::saveClientAndOrder()
             QMessageBox::critical(this, "Erreur", "Erreur lors de la mise à jour du stock: " + query.lastError().text());
             return false;
         }
+    }
+
+    // 5. Insérer le paiement en espèces
+    query.prepare("INSERT INTO PAIEMENTS (id_commande, montant, statut) "
+                  "VALUES (?, ?, 'VALIDE')");
+    query.addBindValue(commandeId);
+    query.addBindValue(totalAmount);
+
+    if (!query.exec()) {
+        QMessageBox::critical(this, "Erreur", "Erreur lors de l'enregistrement du paiement: " + query.lastError().text());
+        return false;
+    }
+
+    // 6. Mettre à jour le statut de la commande à PAYEE
+    query.prepare("UPDATE COMMANDES SET statut = 'PAYEE' WHERE id_commande = ?");
+    query.addBindValue(commandeId);
+
+    if (!query.exec()) {
+        QMessageBox::critical(this, "Erreur", "Erreur lors de la mise à jour du statut de commande: " + query.lastError().text());
+        return false;
     }
 
     return true;
@@ -489,6 +754,40 @@ void OrderDialog::reset()
     orderItems.clear();
     totalAmount = 0.0;
     resetUI();
+}
+
+void OrderDialog::onContinueToPayment()
+{
+    // Validation des stocks
+    if (!checkStocks()) {
+        QMessageBox::warning(this, "Stock insuffisant", 
+                           "Un ou plusieurs produits dans votre commande n'ont plus assez de stock disponible.");
+        return;
+    }
+
+    // Mettre à jour le label de paiement avec le montant
+    paymentTotalLabel->setText(QString("%1 €").arg(QString::number(totalAmount, 'f', 2)));
+
+    // Passer à l'étape 3 (paiement)
+    stackedWidget->setCurrentIndex(2);
+}
+
+void OrderDialog::onPreviousFromPayment()
+{
+    // Revenir à l'étape 2 (récapitulatif)
+    stackedWidget->setCurrentIndex(1);
+}
+
+void OrderDialog::onConfirmPayment()
+{
+    // Sauvegarder client, commande, détails et paiement
+    if (saveClientAndOrder()) {
+        QMessageBox::information(this, "Paiement confirmé",
+                               QString("La commande a été créée et le paiement de %1 € a été enregistré avec succès!").arg(QString::number(totalAmount, 'f', 2)));
+        emit orderSaved();
+        reset();
+        accept();
+    }
 }
 
 void OrderDialog::resetUI()

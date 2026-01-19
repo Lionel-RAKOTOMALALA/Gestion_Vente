@@ -21,6 +21,7 @@ void UserDialog::setupUI()
     setWindowTitle(currentUserId == -1 ? "Ajouter un utilisateur" : "Modifier l'utilisateur");
     setMinimumWidth(500);
     setModal(true);
+    setStyleSheet("QDialog { background: #0f172a; }");
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setSpacing(20);
@@ -28,7 +29,7 @@ void UserDialog::setupUI()
 
     // Titre
     QLabel *title = new QLabel(currentUserId == -1 ? "➕ Nouvel Utilisateur" : "✏️ Modifier l'Utilisateur", this);
-    title->setStyleSheet("font-size: 20px; font-weight: bold; color: #2c3e50;");
+    title->setStyleSheet("font-size: 20px; font-weight: bold; color: #f1f5f9;");
     mainLayout->addWidget(title);
 
     // Formulaire
@@ -54,18 +55,30 @@ void UserDialog::setupUI()
     
     chkActif = new QCheckBox("Compte actif", this);
     chkActif->setChecked(true);
+    chkActif->setStyleSheet("QCheckBox { color: #f1f5f9; }");
 
-    // Style des inputs
+    // Style des inputs dark mode
     QString inputStyle = 
         "QLineEdit, QComboBox {"
-        "   border: 2px solid #e0e0e0;"
+        "   border: 2px solid #334155;"
         "   border-radius: 6px;"
         "   padding: 8px 12px;"
         "   font-size: 14px;"
-        "   background: white;"
+        "   background: #1e293b;"
+        "   color: #f1f5f9;"
         "}"
         "QLineEdit:focus, QComboBox:focus {"
-        "   border-color: #3498db;"
+        "   border-color: #667eea;"
+        "   background: #1e293b;"
+        "}"
+        "QLineEdit::placeholder {"
+        "   color: #64748b;"
+        "}"
+        "QComboBox::drop-down {"
+        "   background: #0f172a;"
+        "}"
+        "QComboBox::down-arrow {"
+        "   color: #f1f5f9;"
         "}";
     
     txtNom->setStyleSheet(inputStyle);
@@ -73,10 +86,24 @@ void UserDialog::setupUI()
     txtPassword->setStyleSheet(inputStyle);
     cboRole->setStyleSheet(inputStyle);
 
-    formLayout->addRow("Nom complet *", txtNom);
-    formLayout->addRow("Email *", txtEmail);
-    formLayout->addRow("Mot de passe *", txtPassword);
-    formLayout->addRow("Rôle *", cboRole);
+    // Style des labels
+    QString labelStyle = "QLabel { color: #f1f5f9; }";
+
+    QLabel *nomLabel = new QLabel("Nom complet *", this);
+    nomLabel->setStyleSheet(labelStyle);
+    formLayout->addRow(nomLabel, txtNom);
+    
+    QLabel *emailLabel = new QLabel("Email *", this);
+    emailLabel->setStyleSheet(labelStyle);
+    formLayout->addRow(emailLabel, txtEmail);
+    
+    QLabel *passLabel = new QLabel("Mot de passe *", this);
+    passLabel->setStyleSheet(labelStyle);
+    formLayout->addRow(passLabel, txtPassword);
+    
+    QLabel *roleLabel = new QLabel("Rôle *", this);
+    roleLabel->setStyleSheet(labelStyle);
+    formLayout->addRow(roleLabel, cboRole);
     formLayout->addRow("", chkActif);
 
     mainLayout->addLayout(formLayout);
@@ -89,16 +116,20 @@ void UserDialog::setupUI()
     btnSave->setMinimumHeight(45);
     btnSave->setStyleSheet(
         "QPushButton {"
-        "   background: #27ae60;"
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #10b981, stop:1 #059669);"
         "   color: white;"
         "   border: none;"
         "   border-radius: 6px;"
         "   padding: 10px 30px;"
         "   font-size: 15px;"
         "   font-weight: bold;"
+        "   outline: none;"
         "}"
         "QPushButton:hover {"
-        "   background: #229954;"
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #059669, stop:1 #047857);"
+        "}"
+        "QPushButton:pressed {"
+        "   background: #047857;"
         "}"
     );
     connect(btnSave, &QPushButton::clicked, this, &UserDialog::onSave);
@@ -107,16 +138,21 @@ void UserDialog::setupUI()
     btnCancel->setMinimumHeight(45);
     btnCancel->setStyleSheet(
         "QPushButton {"
-        "   background: #95a5a6;"
-        "   color: white;"
-        "   border: none;"
+        "   background: transparent;"
+        "   color: #e53e3e;"
+        "   border: 2px solid #e53e3e;"
         "   border-radius: 6px;"
         "   padding: 10px 30px;"
         "   font-size: 15px;"
         "   font-weight: bold;"
+        "   outline: none;"
         "}"
         "QPushButton:hover {"
-        "   background: #7f8c8d;"
+        "   background: #e53e3e;"
+        "   color: white;"
+        "}"
+        "QPushButton:pressed {"
+        "   background: #c53030;"
         "}"
     );
     connect(btnCancel, &QPushButton::clicked, this, &UserDialog::onCancel);
@@ -126,8 +162,6 @@ void UserDialog::setupUI()
     buttonLayout->addWidget(btnCancel);
 
     mainLayout->addLayout(buttonLayout);
-
-    setStyleSheet("QDialog { background: #f5f6fa; }");
 }
 
 void UserDialog::loadUser(int userId)
