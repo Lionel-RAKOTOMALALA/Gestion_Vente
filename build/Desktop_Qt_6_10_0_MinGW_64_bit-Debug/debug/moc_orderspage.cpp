@@ -45,6 +45,8 @@ template <> constexpr inline auto OrdersPage::qt_create_metaobjectdata<qt_meta_t
         "text",
         "onStatusFilterChanged",
         "status",
+        "onPaymentFilterChanged",
+        "filter",
         "onRefreshClicked",
         "onViewOrderDetails",
         "row",
@@ -52,6 +54,8 @@ template <> constexpr inline auto OrdersPage::qt_create_metaobjectdata<qt_meta_t
         "onEditOrder",
         "commandeId",
         "onDeleteOrder",
+        "onNotifyUnpaidOrder",
+        "orderId",
         "onFirstPageClicked",
         "onPreviousPageClicked",
         "onNextPageClicked",
@@ -67,28 +71,36 @@ template <> constexpr inline auto OrdersPage::qt_create_metaobjectdata<qt_meta_t
         QtMocHelpers::SlotData<void(const QString &)>(4, 2, QMC::AccessPrivate, QMetaType::Void, {{
             { QMetaType::QString, 5 },
         }}),
+        // Slot 'onPaymentFilterChanged'
+        QtMocHelpers::SlotData<void(const QString &)>(6, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::QString, 7 },
+        }}),
         // Slot 'onRefreshClicked'
-        QtMocHelpers::SlotData<void()>(6, 2, QMC::AccessPrivate, QMetaType::Void),
+        QtMocHelpers::SlotData<void()>(8, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'onViewOrderDetails'
-        QtMocHelpers::SlotData<void(int, int)>(7, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { QMetaType::Int, 8 }, { QMetaType::Int, 9 },
+        QtMocHelpers::SlotData<void(int, int)>(9, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::Int, 10 }, { QMetaType::Int, 11 },
         }}),
         // Slot 'onEditOrder'
-        QtMocHelpers::SlotData<void(const QString &)>(10, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { QMetaType::QString, 11 },
+        QtMocHelpers::SlotData<void(const QString &)>(12, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::QString, 13 },
         }}),
         // Slot 'onDeleteOrder'
-        QtMocHelpers::SlotData<void(const QString &)>(12, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { QMetaType::QString, 11 },
+        QtMocHelpers::SlotData<void(const QString &)>(14, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::QString, 13 },
+        }}),
+        // Slot 'onNotifyUnpaidOrder'
+        QtMocHelpers::SlotData<void(int)>(15, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::Int, 16 },
         }}),
         // Slot 'onFirstPageClicked'
-        QtMocHelpers::SlotData<void()>(13, 2, QMC::AccessPrivate, QMetaType::Void),
+        QtMocHelpers::SlotData<void()>(17, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'onPreviousPageClicked'
-        QtMocHelpers::SlotData<void()>(14, 2, QMC::AccessPrivate, QMetaType::Void),
+        QtMocHelpers::SlotData<void()>(18, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'onNextPageClicked'
-        QtMocHelpers::SlotData<void()>(15, 2, QMC::AccessPrivate, QMetaType::Void),
+        QtMocHelpers::SlotData<void()>(19, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'onLastPageClicked'
-        QtMocHelpers::SlotData<void()>(16, 2, QMC::AccessPrivate, QMetaType::Void),
+        QtMocHelpers::SlotData<void()>(20, 2, QMC::AccessPrivate, QMetaType::Void),
     };
     QtMocHelpers::UintData qt_properties {
     };
@@ -114,14 +126,16 @@ void OrdersPage::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         switch (_id) {
         case 0: _t->onSearchTextChanged((*reinterpret_cast<std::add_pointer_t<QString>>(_a[1]))); break;
         case 1: _t->onStatusFilterChanged((*reinterpret_cast<std::add_pointer_t<QString>>(_a[1]))); break;
-        case 2: _t->onRefreshClicked(); break;
-        case 3: _t->onViewOrderDetails((*reinterpret_cast<std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast<std::add_pointer_t<int>>(_a[2]))); break;
-        case 4: _t->onEditOrder((*reinterpret_cast<std::add_pointer_t<QString>>(_a[1]))); break;
-        case 5: _t->onDeleteOrder((*reinterpret_cast<std::add_pointer_t<QString>>(_a[1]))); break;
-        case 6: _t->onFirstPageClicked(); break;
-        case 7: _t->onPreviousPageClicked(); break;
-        case 8: _t->onNextPageClicked(); break;
-        case 9: _t->onLastPageClicked(); break;
+        case 2: _t->onPaymentFilterChanged((*reinterpret_cast<std::add_pointer_t<QString>>(_a[1]))); break;
+        case 3: _t->onRefreshClicked(); break;
+        case 4: _t->onViewOrderDetails((*reinterpret_cast<std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast<std::add_pointer_t<int>>(_a[2]))); break;
+        case 5: _t->onEditOrder((*reinterpret_cast<std::add_pointer_t<QString>>(_a[1]))); break;
+        case 6: _t->onDeleteOrder((*reinterpret_cast<std::add_pointer_t<QString>>(_a[1]))); break;
+        case 7: _t->onNotifyUnpaidOrder((*reinterpret_cast<std::add_pointer_t<int>>(_a[1]))); break;
+        case 8: _t->onFirstPageClicked(); break;
+        case 9: _t->onPreviousPageClicked(); break;
+        case 10: _t->onNextPageClicked(); break;
+        case 11: _t->onLastPageClicked(); break;
         default: ;
         }
     }
@@ -146,14 +160,14 @@ int OrdersPage::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 10)
+        if (_id < 12)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 10;
+        _id -= 12;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 10)
+        if (_id < 12)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 10;
+        _id -= 12;
     }
     return _id;
 }

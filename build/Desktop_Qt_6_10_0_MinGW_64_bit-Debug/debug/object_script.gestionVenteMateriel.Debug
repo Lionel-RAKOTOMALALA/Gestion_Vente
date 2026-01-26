@@ -7,7 +7,9 @@ debug/logindialog.o
 debug/main.o
 debug/mainwindow.o
 debug/orderdialog.o
+debug/orderdetailsdialog.o
 debug/orderspage.o
+debug/paymentdialog.o
 debug/paymentspage.o
 debug/productdialog.o
 debug/productspage.o
@@ -26,7 +28,9 @@ debug/moc_dashboardpage.o
 debug/moc_logindialog.o
 debug/moc_mainwindow.o
 debug/moc_orderdialog.o
+debug/moc_orderdetailsdialog.o
 debug/moc_orderspage.o
+debug/moc_paymentdialog.o
 debug/moc_paymentspage.o
 debug/moc_productdialog.o
 debug/moc_productspage.o

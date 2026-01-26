@@ -1,4 +1,4 @@
-QT       += core gui sql charts
+QT       += core gui sql charts network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -17,12 +17,16 @@ SOURCES += \
     logindialog.cpp \
     main.cpp \
     mainwindow.cpp \
-    orderdialog_new.cpp \
+    orderdialog.cpp \
+    orderdetailsdialog.cpp \
     orderspage.cpp \
+    paymentdialog.cpp \
     paymentspage.cpp \
     productdialog.cpp \
     productspage.cpp \
+    receiptgenerator.cpp \
     sidebar.cpp \
+    smtpclient.cpp \
     stylesheet.cpp \
     thememanager.cpp \
     userdialog.cpp \
@@ -37,11 +41,16 @@ HEADERS += \
     logindialog.h \
     mainwindow.h \
     orderdialog.h \
+    orderdetailsdialog.h \
     orderspage.h \
+    paymentdialog.h \
     paymentspage.h \
     productdialog.h \
     productspage.h \
+    receiptgenerator.h \
     sidebar.h \
+    smtpclient.h \
+    smtpconfig.h \
     stylesheet.h \
     thememanager.h \
     userdialog.h \

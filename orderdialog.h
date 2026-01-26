@@ -10,6 +10,8 @@
 #include <QStackedWidget>
 #include <QLineEdit>
 #include <QTextEdit>
+#include <QComboBox>
+#include <QDoubleSpinBox>
 #include <QMap>
 #include <QSqlQuery>
 
@@ -57,8 +59,9 @@ private:
     void setupPaymentForm();
     void updateTotal();
     void updateTable();
+    void updatePaymentStatus();
     void createTablesIfNotExist();
-    bool saveClientAndOrder();
+    int saveClientAndOrder(double paidAmount = 0.0);
     void loadOrderForEdit(const QString &commandeId);
 
     QStackedWidget *stackedWidget;
@@ -83,6 +86,10 @@ private:
     // Étape 3: Paiement
     QWidget *paymentWidget;
     QLabel *paymentTotalLabel;
+    QLabel *paymentStatusLabel;
+    QDoubleSpinBox *paymentAmountSpinBox;
+    QComboBox *paymentMethodCombo;
+    QPushButton *paymentUseFullAmountBtn;
     QPushButton *confirmPaymentBtn;
     QPushButton *previousPaymentBtn;
 

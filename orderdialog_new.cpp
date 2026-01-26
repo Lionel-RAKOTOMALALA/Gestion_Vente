@@ -1,4 +1,5 @@
 #include "orderdialog.h"
+#include "receiptgenerator.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFormLayout>
@@ -8,6 +9,9 @@
 #include <QMessageBox>
 #include <QSqlQuery>
 #include <QSqlError>
+#include <QStandardPaths>
+#include <QDateTime>
+#include <QDebug>
 
 OrderDialog::OrderDialog(int userId, QWidget *parent) :
     QDialog(parent), totalAmount(0.0), currentUserId(userId)
@@ -212,7 +216,7 @@ void OrderDialog::setupOrderSummary()
     layout->addWidget(orderTable);
 
     // Total
-    totalLabel = new QLabel("Total: 0.00 €", orderWidget);
+    totalLabel = new QLabel("Total: 0.00 Ar", orderWidget);
     totalLabel->setStyleSheet("font-weight: bold; font-size: 16px; margin: 10px 0; color: #f1f5f9;");
     layout->addWidget(totalLabel);
 
@@ -526,7 +530,7 @@ void OrderDialog::updateTotal()
         totalAmount += item.total;
     }
     if (totalLabel) {
-        totalLabel->setText(QString("Total: %1 €").arg(QString::number(totalAmount, 'f', 2)));
+        totalLabel->setText(QString("Total: %1 Ar").arg(QString::number(totalAmount, 'f', 2)));
     }
 }
 
@@ -544,13 +548,13 @@ void OrderDialog::updateTable()
         orderTable->setItem(row, 0, new QTableWidgetItem(item.productName));
 
         // Prix unitaire
-        orderTable->setItem(row, 1, new QTableWidgetItem(QString::number(item.unitPrice, 'f', 2) + " €"));
+        orderTable->setItem(row, 1, new QTableWidgetItem(QString::number(item.unitPrice, 'f', 2) + " Ar"));
 
         // Quantité
         orderTable->setItem(row, 2, new QTableWidgetItem(QString::number(item.quantity)));
 
         // Total pour cet article
-        orderTable->setItem(row, 3, new QTableWidgetItem(QString::number(item.total, 'f', 2) + " €"));
+        orderTable->setItem(row, 3, new QTableWidgetItem(QString::number(item.total, 'f', 2) + " Ar"));
 
         // Bouton de suppression
         QWidget *actionWidget = new QWidget();
@@ -595,7 +599,7 @@ void OrderDialog::updateTable()
     }
 }
 
-bool OrderDialog::saveClientAndOrder()
+int OrderDialog::saveClientAndOrder()
 {
     QSqlQuery query;
 
@@ -610,7 +614,7 @@ bool OrderDialog::saveClientAndOrder()
 
     if (!query.exec()) {
         QMessageBox::critical(this, "Erreur", "Erreur lors de la création du client: " + query.lastError().text());
-        return false;
+        return -1;
     }
 
     int clientId = query.lastInsertId().toInt();
@@ -624,7 +628,7 @@ bool OrderDialog::saveClientAndOrder()
 
     if (!query.exec()) {
         QMessageBox::critical(this, "Erreur", "Erreur lors de la création de la commande: " + query.lastError().text());
-        return false;
+        return -1;
     }
 
     int commandeId = query.lastInsertId().toInt();
@@ -641,7 +645,7 @@ bool OrderDialog::saveClientAndOrder()
 
         if (!query.exec()) {
             QMessageBox::critical(this, "Erreur", "Erreur lors de l'ajout des détails de commande: " + query.lastError().text());
-            return false;
+            return -1;
         }
     }
 
@@ -653,7 +657,7 @@ bool OrderDialog::saveClientAndOrder()
 
         if (!query.exec()) {
             QMessageBox::critical(this, "Erreur", "Erreur lors de la mise à jour du stock: " + query.lastError().text());
-            return false;
+            return -1;
         }
     }
 
@@ -665,7 +669,7 @@ bool OrderDialog::saveClientAndOrder()
 
     if (!query.exec()) {
         QMessageBox::critical(this, "Erreur", "Erreur lors de l'enregistrement du paiement: " + query.lastError().text());
-        return false;
+        return -1;
     }
 
     // 6. Mettre à jour le statut de la commande à PAYEE
@@ -674,10 +678,10 @@ bool OrderDialog::saveClientAndOrder()
 
     if (!query.exec()) {
         QMessageBox::critical(this, "Erreur", "Erreur lors de la mise à jour du statut de commande: " + query.lastError().text());
-        return false;
+        return -1;
     }
 
-    return true;
+    return commandeId;
 }
 
 bool OrderDialog::checkStocks()
@@ -766,7 +770,7 @@ void OrderDialog::onContinueToPayment()
     }
 
     // Mettre à jour le label de paiement avec le montant
-    paymentTotalLabel->setText(QString("%1 €").arg(QString::number(totalAmount, 'f', 2)));
+    paymentTotalLabel->setText(QString("%1 Ar").arg(QString::number(totalAmount, 'f', 2)));
 
     // Passer à l'étape 3 (paiement)
     stackedWidget->setCurrentIndex(2);
@@ -780,13 +784,59 @@ void OrderDialog::onPreviousFromPayment()
 
 void OrderDialog::onConfirmPayment()
 {
+    qDebug() << "=== onConfirmPayment() called ===";
+    
     // Sauvegarder client, commande, détails et paiement
-    if (saveClientAndOrder()) {
-        QMessageBox::information(this, "Paiement confirmé",
-                               QString("La commande a été créée et le paiement de %1 € a été enregistré avec succès!").arg(QString::number(totalAmount, 'f', 2)));
+    int commandeId = saveClientAndOrder();
+    qDebug() << "saveClientAndOrder returned commandeId:" << commandeId;
+    
+    if (commandeId != -1) {
+        // Générer le PDF de reçu
+        qDebug() << "Generating receipt for command ID:" << commandeId;
+        ReceiptData receiptData = ReceiptGenerator::getReceiptData(commandeId);
+        qDebug() << "Receipt data retrieved";
+        qDebug() << "  Client email:" << receiptData.client.email;
+        qDebug() << "  Order ID:" << receiptData.order.id;
+        qDebug() << "  Payment amount:" << receiptData.payment.montant;
+        
+        ReceiptGenerator generator;
+        
+        // Générer le PDF et récupérer le chemin
+        QString documentsPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+        QString pdfFilePath = QString("%1/Recu_Commande_%2_%3.pdf")
+            .arg(documentsPath)
+            .arg(commandeId)
+            .arg(QDateTime::currentDateTime().toString("ddMMyyyy_hhmmss"));
+        
+        qDebug() << "PDF file path:" << pdfFilePath;
+        generator.generatePDF(receiptData, pdfFilePath);
+        qDebug() << "PDF generated successfully";
+        
+        // Envoyer le PDF par email si l'email client est disponible
+        if (!receiptData.client.email.isEmpty()) {
+            qDebug() << "Email address is not empty, attempting to send email to:" << receiptData.client.email;
+            bool emailSent = generator.sendReceiptByEmail(receiptData.client.email, pdfFilePath, receiptData);
+            qDebug() << "Email send result:" << (emailSent ? "SUCCESS" : "FAILED");
+            
+            if (emailSent) {
+                QMessageBox::information(this, "Paiement confirmé",
+                                       QString("La commande a été créée et le paiement de %1 Ar a été enregistré avec succès!\n\nLe reçu a été généré et un email a été envoyé à %2.").arg(QString::number(totalAmount, 'f', 2)).arg(receiptData.client.email));
+            } else {
+                qWarning() << "Email sending failed";
+                QMessageBox::information(this, "Paiement confirmé",
+                                       QString("La commande a été créée et le paiement de %1 Ar a été enregistré avec succès!\n\nLe reçu a été généré et ouvert.").arg(QString::number(totalAmount, 'f', 2)));
+            }
+        } else {
+            qWarning() << "Email address is empty!";
+            QMessageBox::information(this, "Paiement confirmé",
+                                   QString("La commande a été créée et le paiement de %1 Ar a été enregistré avec succès!\n\nLe reçu a été généré et ouvert.\n\nAucun email envoyé - adresse email non disponible.").arg(QString::number(totalAmount, 'f', 2)));
+        }
+        
         emit orderSaved();
         reset();
         accept();
+    } else {
+        qWarning() << "Failed to save client and order";
     }
 }
 

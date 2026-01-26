@@ -368,7 +368,7 @@ QWidget* ProductsPage::createProductCard(int productId, const QString &nom, cons
     contentLayout->addWidget(nameLabel);
 
     // Price
-    QLabel *priceLabel = new QLabel(QString("€%1").arg(QString::number(prixVente, 'f', 2)), contentWidget);
+    QLabel *priceLabel = new QLabel(QString("%1 Ar").arg(QString::number(prixVente, 'f', 2)), contentWidget);
     priceLabel->setMinimumHeight(38);
     priceLabel->setStyleSheet(
         QString("font-size: 28px;"

@@ -138,9 +138,9 @@ void ProductDialog::setupUI()
     nomLabel->setStyleSheet(labelStyle);
     QLabel *descLabel = new QLabel("Description", this);
     descLabel->setStyleSheet(labelStyle);
-    QLabel *prixVenteLabel = new QLabel("Prix de vente (€) *", this);
+    QLabel *prixVenteLabel = new QLabel("Prix de vente (Ar) *", this);
     prixVenteLabel->setStyleSheet(labelStyle);
-    QLabel *prixAchatLabel = new QLabel("Prix d'achat (€)", this);
+    QLabel *prixAchatLabel = new QLabel("Prix d'achat (Ar)", this);
     prixAchatLabel->setStyleSheet(labelStyle);
     QLabel *stockLabel = new QLabel("Stock *", this);
     stockLabel->setStyleSheet(labelStyle);

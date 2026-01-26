@@ -223,7 +223,7 @@ void PaymentsPage::loadPayments()
 
         // Montant
         double montant = query.value("montant").toDouble();
-        paymentsTable->setItem(row, 2, new QTableWidgetItem(QString::number(montant, 'f', 2) + " €"));
+        paymentsTable->setItem(row, 2, new QTableWidgetItem(QString::number(montant, 'f', 2) + " Ar"));
 
         // Date
         QDateTime date = query.value("date_paiement").toDateTime();

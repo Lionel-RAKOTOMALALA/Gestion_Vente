@@ -1,5 +1,6 @@
 #include "orderspage.h"
 #include "orderdialog.h"
+#include "orderdetailsdialog.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -9,7 +10,9 @@
 #include <QMessageBox>
 #include <QDateTime>
 #include <QDebug>
+#include <QStandardPaths>
 #include "thememanager.h"
+#include "receiptgenerator.h"
 
 OrdersPage::OrdersPage(const QString &userRole, int userId, QWidget *parent) : 
     QFrame(parent), 
@@ -127,6 +130,35 @@ void OrdersPage::setupUI()
             this, &OrdersPage::onStatusFilterChanged);
     filterLayout->addWidget(statusFilter, 1);
 
+    paymentFilter = new QComboBox(this);
+    paymentFilter->setMinimumHeight(48);
+    paymentFilter->addItem("Tous les paiements", "");
+    paymentFilter->addItem("Non payé (En cours)", "EN_COURS");
+    paymentFilter->addItem("Payé", "PAYEE");
+    paymentFilter->setStyleSheet(QString(
+        "QComboBox {"
+        "   border: 1px solid %1;"
+        "   border-radius: 12px;"
+        "   padding: 12px 20px;"
+        "   font-size: 15px;"
+        "   background: %2;"
+        "   color: %3;"
+        "}"
+        "QComboBox:focus {"
+        "   border: 2px solid %4;"
+        "}"
+        "QComboBox::drop-down {"
+        "   border: none;"
+        "}"
+    ).arg(theme.borderColor().name(),
+          theme.inputBackground().name(),
+          theme.textColor().name(),
+          theme.primaryColor().name()));
+    
+    connect(paymentFilter, QOverload<const QString &>::of(&QComboBox::currentTextChanged),
+            this, &OrdersPage::onPaymentFilterChanged);
+    filterLayout->addWidget(paymentFilter, 1);
+
     refreshBtn = new QPushButton("🔄 Actualiser", this);
     refreshBtn->setMinimumHeight(48);
     refreshBtn->setMinimumWidth(140);
@@ -161,9 +193,9 @@ void OrdersPage::setupUI()
     ordersTable->setColumnCount(columnCount);
     
     QStringList headers;
-    headers << "N° Commande" << "Date" << "Client" << "Vendeur" << "Statut" << "Total" << "Produits";
+    headers << "N° Commande" << "Date" << "Client" << "Vendeur" << "Statut" << "Total" << "Actions";
     if (userRole == "ADMIN") {
-        headers << "Actions";
+        headers << "Actions Admin";
     }
     ordersTable->setHorizontalHeaderLabels(headers);
     ordersTable->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -203,10 +235,12 @@ void OrdersPage::setupUI()
     ordersTable->setColumnWidth(2, 200);
     ordersTable->setColumnWidth(3, 150);
     ordersTable->setColumnWidth(4, 100);
-    ordersTable->setColumnWidth(5, 100);
+    ordersTable->setColumnWidth(5, 120);
     if (userRole == "ADMIN") {
-        ordersTable->setColumnWidth(6, 200);
-        ordersTable->setColumnWidth(7, 150);
+        ordersTable->setColumnWidth(6, 220);
+        ordersTable->setColumnWidth(7, 180);
+    } else {
+        ordersTable->setColumnWidth(6, 220);
     }
 
     ordersTable->verticalHeader()->setDefaultSectionSize(50);
@@ -295,8 +329,6 @@ void OrdersPage::loadOrders()
         FROM COMMANDES c
         LEFT JOIN CLIENTS cl ON c.id_client = cl.id_client
         LEFT JOIN USERS u ON c.id_user = u.id_user
-        LEFT JOIN COMMANDE_DETAIL cd ON c.id_commande = cd.id_commande
-        LEFT JOIN PRODUITS p ON cd.id_produit = p.id_produit
         WHERE 1=1
     )";
 
@@ -311,6 +343,10 @@ void OrdersPage::loadOrders()
 
     if (!currentStatusFilter.isEmpty()) {
         conditions << "c.statut = '" + currentStatusFilter + "'";
+    }
+
+    if (!currentPaymentFilter.isEmpty()) {
+        conditions << "c.statut = '" + currentPaymentFilter + "'";
     }
 
     if (!conditions.isEmpty()) {
@@ -344,12 +380,13 @@ void OrdersPage::loadOrders()
             u.nom as vendeur_nom,
             c.statut,
             c.total,
-            GROUP_CONCAT(p.nom_produit, ', ') as produits
+            (SELECT GROUP_CONCAT(p.nom_produit, ', ')
+             FROM DETAILS_COMMANDE dc
+             LEFT JOIN PRODUITS p ON dc.id_produit = p.id_produit
+             WHERE dc.id_commande = c.id_commande) as produits
         FROM COMMANDES c
         LEFT JOIN CLIENTS cl ON c.id_client = cl.id_client
         LEFT JOIN USERS u ON c.id_user = u.id_user
-        LEFT JOIN COMMANDE_DETAIL cd ON c.id_commande = cd.id_commande
-        LEFT JOIN PRODUITS p ON cd.id_produit = p.id_produit
         WHERE 1=1
     )";
 
@@ -357,15 +394,18 @@ void OrdersPage::loadOrders()
         queryStr += " AND " + conditions.join(" AND ");
     }
 
-    queryStr += " GROUP BY c.id_commande, c.date_commande, cl.nom, cl.prenom, u.nom, c.statut, c.total "
+    queryStr += " GROUP BY c.id_commande "
                 "ORDER BY c.date_commande DESC "
                 "LIMIT " + QString::number(itemsPerPage) + " OFFSET " + QString::number((currentPage - 1) * itemsPerPage);
 
     QSqlQuery query;
     if (!query.exec(queryStr)) {
         QMessageBox::critical(this, "Erreur", "Erreur lors du chargement des commandes: " + query.lastError().text());
+        qDebug() << "Query error:" << query.lastError().text();
         return;
     }
+    
+    qDebug() << "Query executed successfully. Rows count:" << query.size();
 
     int row = 0;
     while (query.next()) {
@@ -401,13 +441,92 @@ void OrdersPage::loadOrders()
         ordersTable->setItem(row, 4, statusItem);
 
         double total = query.value("total").toDouble();
-        ordersTable->setItem(row, 5, new QTableWidgetItem(QString("€%1").arg(QString::number(total, 'f', 2))));
+        ordersTable->setItem(row, 5, new QTableWidgetItem(QString("%1 Ar").arg(QString::number(total, 'f', 2))));
+
+        // Créer un widget pour les produits avec un bouton "Voir"
+        QWidget *productsWidget = new QWidget();
+        QHBoxLayout *productsLayout = new QHBoxLayout(productsWidget);
+        productsLayout->setContentsMargins(0, 0, 0, 0);
+        productsLayout->setSpacing(6);
+        productsLayout->setAlignment(Qt::AlignCenter);
 
         QString produits = query.value("produits").toString();
+        int idCommande = query.value("id_commande").toInt();
+        
+        qDebug() << "Commande #" << idCommande << " - Produits:" << produits;
+        
         if (produits.isEmpty()) {
-            produits = "Aucun produit";
+            QLabel *noProductsLabel = new QLabel("Aucun produit");
+            noProductsLabel->setStyleSheet("color: #94a3b8;");
+            productsLayout->addWidget(noProductsLabel);
+        } else {
+            QPushButton *viewBtn = new QPushButton("👁 Voir", this);
+            viewBtn->setFixedSize(80, 28);
+            viewBtn->setCursor(Qt::PointingHandCursor);
+            viewBtn->setToolTip(produits);
+            viewBtn->setStyleSheet(
+                "QPushButton {"
+                "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+                "   stop:0 #06b6d4, stop:1 #0891b2);"
+                "   color: white;"
+                "   border: none;"
+                "   border-radius: 4px;"
+                "   font-size: 11px;"
+                "   font-weight: bold;"
+                "   padding: 4px 8px;"
+                "}"
+                "QPushButton:hover {"
+                "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+                "   stop:0 #00d4e8, stop:1 #06b6d4);"
+                "}"
+                "QPushButton:pressed {"
+                "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+                "   stop:0 #0891b2, stop:1 #006b7e);"
+                "}"
+            );
+            
+            connect(viewBtn, &QPushButton::clicked, this, [this, idCommande]() {
+                OrderDetailsDialog detailsDialog(idCommande, this);
+                detailsDialog.exec();
+            });
+            
+            productsLayout->addWidget(viewBtn);
+            
+            // Ajouter un bouton "Notifier" si la commande n'est pas payée
+            if (statut == "EN_COURS") {
+                QPushButton *notifyBtn = new QPushButton("🔔 Notifier", this);
+                notifyBtn->setFixedSize(85, 28);
+                notifyBtn->setCursor(Qt::PointingHandCursor);
+                notifyBtn->setStyleSheet(
+                    "QPushButton {"
+                    "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+                    "   stop:0 #f59e0b, stop:1 #d97706);"
+                    "   color: white;"
+                    "   border: none;"
+                    "   border-radius: 4px;"
+                    "   font-size: 10px;"
+                    "   font-weight: bold;"
+                    "   padding: 4px 8px;"
+                    "}"
+                    "QPushButton:hover {"
+                    "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+                    "   stop:0 #d97706, stop:1 #b45309);"
+                    "}"
+                    "QPushButton:pressed {"
+                    "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+                    "   stop:0 #b45309, stop:1 #92400e);"
+                    "}"
+                );
+                
+                connect(notifyBtn, &QPushButton::clicked, this, [this, idCommande]() {
+                    onNotifyUnpaidOrder(idCommande);
+                });
+                
+                productsLayout->addWidget(notifyBtn);
+            }
         }
-        ordersTable->setItem(row, 6, new QTableWidgetItem(produits));
+        
+        ordersTable->setCellWidget(row, 6, productsWidget);
 
         if (userRole == "ADMIN") {
             QWidget *actionWidget = new QWidget();
@@ -505,6 +624,13 @@ void OrdersPage::onStatusFilterChanged(const QString &text)
     loadOrders();
 }
 
+void OrdersPage::onPaymentFilterChanged(const QString &text)
+{
+    currentPaymentFilter = paymentFilter->currentData().toString();
+    currentPage = 1;
+    loadOrders();
+}
+
 void OrdersPage::onFirstPageClicked()
 {
     currentPage = 1;
@@ -549,4 +675,37 @@ void OrdersPage::onEditOrder(const QString &orderId)
 
 void OrdersPage::onDeleteOrder(const QString &orderId)
 {
+}
+
+void OrdersPage::onNotifyUnpaidOrder(int orderId)
+{
+    // Récupérer les données de la commande
+    ReceiptGenerator generator;
+    ReceiptData orderData = generator.getReceiptData(orderId);
+
+    // Vérifier si l'email est valide
+    if (orderData.client.email.isEmpty()) {
+        QMessageBox::warning(this, "Erreur", "L'email du client n'est pas disponible!");
+        return;
+    }
+
+    // Générer le PDF
+    QString pdfPath = QString("%1/Recu_Commande_%2_%3.pdf")
+        .arg(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation))
+        .arg(orderData.order.id)
+        .arg(QDateTime::currentDateTime().toString("ddMMyyyy_hhmmss"));
+
+    if (!generator.generatePDF(orderData, pdfPath)) {
+        QMessageBox::critical(this, "Erreur", "Impossible de générer le PDF!");
+        return;
+    }
+
+    // Envoyer l'email
+    if (generator.sendReceiptByEmail(orderData.client.email, pdfPath, orderData)) {
+        QMessageBox::information(this, "Succès", 
+            QString("Notification envoyée à %1!")
+            .arg(orderData.client.email));
+    } else {
+        QMessageBox::critical(this, "Erreur", "Impossible d'envoyer la notification!");
+    }
 }

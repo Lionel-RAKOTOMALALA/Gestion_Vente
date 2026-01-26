@@ -1,4 +1,6 @@
 #include "orderdialog.h"
+#include "paymentdialog.h"
+#include "receiptgenerator.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFormLayout>
@@ -8,9 +10,14 @@
 #include <QMessageBox>
 #include <QSqlQuery>
 #include <QSqlError>
+#include <QStandardPaths>
+#include <QDateTime>
+#include <QDebug>
+#include <QSpinBox>
+#include <QScrollArea>
 
 OrderDialog::OrderDialog(int userId, QWidget *parent) :
-    QDialog(parent), totalAmount(0.0), currentUserId(userId), isEditMode(false)
+    QDialog(parent), totalAmount(0.0), currentUserId(userId)
 {
     setWindowTitle("Nouvelle commande");
     setModal(true);
@@ -29,6 +36,10 @@ OrderDialog::OrderDialog(int userId, QWidget *parent) :
     setupUI();
 }
 
+OrderDialog::~OrderDialog()
+{
+}
+
 OrderDialog::OrderDialog(int userId, const QString &commandeId, QWidget *parent) :
     QDialog(parent), totalAmount(0.0), currentUserId(userId), isEditMode(true), editCommandeId(commandeId)
 {
@@ -40,18 +51,13 @@ OrderDialog::OrderDialog(int userId, const QString &commandeId, QWidget *parent)
 
     // Positionner le modal à droite de la fenêtre parente
     if (parent) {
-        QPoint parentPos = parent->mapToGlobal(QPoint(0, 0));
-        QSize parentSize = parent->size();
-        move(parentPos.x() + parentSize.width() + 10, parentPos.y());
+        QPoint pos = parent->mapToGlobal(QPoint(parent->width() - width() - 20, 20));
+        move(pos);
     }
 
     createTablesIfNotExist();
-    loadOrderForEdit(commandeId);
     setupUI();
-}
-
-OrderDialog::~OrderDialog()
-{
+    loadOrderForEdit(commandeId);
 }
 
 void OrderDialog::createTablesIfNotExist()
@@ -79,14 +85,25 @@ void OrderDialog::createTablesIfNotExist()
                "FOREIGN KEY(id_client) REFERENCES CLIENTS(id_client), "
                "FOREIGN KEY(id_user) REFERENCES USERS(id_user))");
 
-    // Table COMMANDE_DETAIL
-    query.exec("CREATE TABLE IF NOT EXISTS COMMANDE_DETAIL ("
+    // Table DETAILS_COMMANDE
+    query.exec("CREATE TABLE IF NOT EXISTS DETAILS_COMMANDE ("
                "id_detail INTEGER PRIMARY KEY AUTOINCREMENT, "
                "id_commande INTEGER NOT NULL, "
                "id_produit INTEGER NOT NULL, "
                "quantite INTEGER NOT NULL, "
-               "FOREIGN KEY(id_commande) REFERENCES COMMANDES(id_commande) ON DELETE CASCADE, "
+               "prix_unitaire REAL NOT NULL, "
+               "total REAL NOT NULL, "
+               "FOREIGN KEY(id_commande) REFERENCES COMMANDES(id_commande), "
                "FOREIGN KEY(id_produit) REFERENCES PRODUITS(id_produit))");
+
+    // Table PAIEMENTS
+    query.exec("CREATE TABLE IF NOT EXISTS PAIEMENTS ("
+               "id_paiement INTEGER PRIMARY KEY AUTOINCREMENT, "
+               "id_commande INTEGER NOT NULL, "
+               "montant REAL NOT NULL, "
+               "date_paiement DATETIME DEFAULT CURRENT_TIMESTAMP, "
+               "statut TEXT DEFAULT 'VALIDE' CHECK(statut IN ('VALIDE', 'ANNULE')), "
+               "FOREIGN KEY(id_commande) REFERENCES COMMANDES(id_commande))");
 }
 
 void OrderDialog::setupUI()
@@ -97,6 +114,7 @@ void OrderDialog::setupUI()
 
     setupClientForm();
     setupOrderSummary();
+    setupPaymentForm();
 
     // Commencer par l'étape 1 (client)
     stackedWidget->setCurrentIndex(0);
@@ -135,6 +153,127 @@ void OrderDialog::setupClientForm()
     formLayout->addRow("Adresse:", adresseEdit);
 
     layout->addLayout(formLayout);
+
+    // Ajouter la section des produits
+    QLabel *productsTitle = new QLabel("Produits", clientWidget);
+    productsTitle->setStyleSheet("font-size: 14px; font-weight: bold; margin-top: 20px; margin-bottom: 10px; color: #10b981;");
+    layout->addWidget(productsTitle);
+
+    // Créer une scroll area avec la liste des produits
+    QScrollArea *scrollArea = new QScrollArea(clientWidget);
+    scrollArea->setWidgetResizable(true);
+    scrollArea->setStyleSheet(
+        "QScrollArea {"
+        "   background: #1e293b;"
+        "   border: 1px solid #334155;"
+        "   border-radius: 4px;"
+        "}"
+    );
+    
+    QWidget *productsContainerWidget = new QWidget();
+    QVBoxLayout *productsLayout = new QVBoxLayout(productsContainerWidget);
+    productsLayout->setContentsMargins(0, 0, 0, 0);
+    
+    // Charger les produits depuis la base de données
+    QSqlQuery query;
+    query.exec("SELECT id_produit, nom_produit, prix_vente, stock FROM PRODUITS WHERE stock > 0");
+    
+    if (!query.next()) {
+        // Aucun produit disponible
+        QLabel *noProductLabel = new QLabel("Aucun produit", productsContainerWidget);
+        noProductLabel->setStyleSheet("color: #cbd5e1; padding: 10px;");
+        productsLayout->addWidget(noProductLabel);
+    } else {
+        // Afficher les produits
+        do {
+            int productId = query.value(0).toInt();
+            QString productName = query.value(1).toString();
+            double price = query.value(2).toDouble();
+            int stock = query.value(3).toInt();
+            
+            // Créer un widget pour le produit
+            QWidget *productItemWidget = new QWidget();
+            QHBoxLayout *itemLayout = new QHBoxLayout(productItemWidget);
+            itemLayout->setContentsMargins(10, 10, 10, 10);
+            
+            // Infos du produit
+            QVBoxLayout *infoLayout = new QVBoxLayout();
+            QLabel *nameLabel = new QLabel(productName, productItemWidget);
+            nameLabel->setStyleSheet("font-weight: bold; color: #f1f5f9;");
+            infoLayout->addWidget(nameLabel);
+            
+            QLabel *priceLabel = new QLabel(QString("Prix: %1 Ar | Stock: %2").arg(QString::number(price, 'f', 2)).arg(stock), productItemWidget);
+            priceLabel->setStyleSheet("color: #cbd5e1; font-size: 12px;");
+            infoLayout->addWidget(priceLabel);
+            
+            itemLayout->addLayout(infoLayout, 1);
+            
+            // Spinbox pour la quantité
+            QSpinBox *quantitySpinBox = new QSpinBox(productItemWidget);
+            quantitySpinBox->setMinimum(0);
+            quantitySpinBox->setMaximum(stock);
+            quantitySpinBox->setValue(0);
+            quantitySpinBox->setStyleSheet(
+                "QSpinBox {"
+                "   background: #0f172a;"
+                "   color: #f1f5f9;"
+                "   border: 1px solid #334155;"
+                "   border-radius: 4px;"
+                "   padding: 4px;"
+                "}"
+            );
+            itemLayout->addWidget(quantitySpinBox);
+            
+            // Bouton Ajouter
+            QPushButton *addBtn = new QPushButton("Ajouter", productItemWidget);
+            addBtn->setFixedWidth(80);
+            addBtn->setStyleSheet(
+                "QPushButton {"
+                "   background-color: #10b981;"
+                "   color: white;"
+                "   border: none;"
+                "   border-radius: 4px;"
+                "   padding: 6px;"
+                "}"
+                "QPushButton:hover {"
+                "   background-color: #059669;"
+                "}"
+            );
+            
+            // Stocker le productId et quantitySpinBox pour accès ultérieur
+            addBtn->setProperty("productId", productId);
+            addBtn->setProperty("productName", productName);
+            addBtn->setProperty("price", price);
+            
+            connect(addBtn, &QPushButton::clicked, [this, productId, productName, price, quantitySpinBox]() {
+                int quantity = quantitySpinBox->value();
+                if (quantity > 0) {
+                    addProduct(productId, productName, price, quantity);
+                    quantitySpinBox->setValue(0);
+                } else {
+                    QMessageBox::warning(this, "Erreur", "Veuillez sélectionner une quantité supérieure à 0");
+                }
+            });
+            
+            itemLayout->addWidget(addBtn);
+            
+            productItemWidget->setStyleSheet(
+                "QWidget {"
+                "   background: #1a2332;"
+                "   border: 1px solid #334155;"
+                "   border-radius: 4px;"
+                "   margin-bottom: 5px;"
+                "}"
+            );
+            
+            productsLayout->addWidget(productItemWidget);
+        } while (query.next());
+    }
+    
+    productsLayout->addStretch();
+    scrollArea->setWidget(productsContainerWidget);
+    layout->addWidget(scrollArea, 1);
+    
     layout->addStretch();
 
     // Boutons
@@ -153,15 +292,6 @@ void OrderDialog::setupClientForm()
     layout->addLayout(buttonLayout);
 
     stackedWidget->addWidget(clientWidget);
-
-    // Pré-remplir les champs si en mode édition
-    if (isEditMode) {
-        nomEdit->setText(clientNom);
-        prenomEdit->setText(clientPrenom);
-        telephoneEdit->setText(clientTelephone);
-        emailEdit->setText(clientEmail);
-        adresseEdit->setText(clientAdresse);
-    }
 }
 
 void OrderDialog::setupOrderSummary()
@@ -210,7 +340,7 @@ void OrderDialog::setupOrderSummary()
     layout->addWidget(orderTable);
 
     // Total
-    totalLabel = new QLabel("Total: 0.00 €", orderWidget);
+    totalLabel = new QLabel("Total: 0.00 Ar", orderWidget);
     totalLabel->setStyleSheet("font-weight: bold; font-size: 16px; margin: 10px 0; color: #f1f5f9;");
     layout->addWidget(totalLabel);
 
@@ -270,7 +400,7 @@ void OrderDialog::setupOrderSummary()
     connect(cancelBtn2, &QPushButton::clicked, this, &OrderDialog::onCancelOrder);
     buttonLayout->addWidget(cancelBtn2);
 
-    validateBtn = new QPushButton("Valider la commande", orderWidget);
+    validateBtn = new QPushButton("Continuer vers paiement", orderWidget);
     validateBtn->setMinimumHeight(48);
     validateBtn->setMinimumWidth(140);
     validateBtn->setCursor(Qt::PointingHandCursor);
@@ -291,12 +421,235 @@ void OrderDialog::setupOrderSummary()
         "   background: #047857;"
         "}"
     );
-    connect(validateBtn, &QPushButton::clicked, this, &OrderDialog::onValidateOrder);
+    connect(validateBtn, &QPushButton::clicked, this, &OrderDialog::onContinueToPayment);
     buttonLayout->addWidget(validateBtn);
 
     layout->addLayout(buttonLayout);
 
     stackedWidget->addWidget(orderWidget);
+}
+
+void OrderDialog::setupPaymentForm()
+{
+    paymentWidget = new QWidget();
+    QVBoxLayout *layout = new QVBoxLayout(paymentWidget);
+
+    QLabel *title = new QLabel("💳 Formulaire de Paiement", paymentWidget);
+    title->setStyleSheet("font-size: 20px; font-weight: bold; margin-bottom: 20px; color: #f1f5f9;");
+    layout->addWidget(title);
+
+    // Montant total à payer
+    QLabel *totalDescLabel = new QLabel("Montant de la commande:", paymentWidget);
+    totalDescLabel->setStyleSheet("color: #cbd5e1; font-weight: 600; font-size: 14px;");
+    
+    paymentTotalLabel = new QLabel(paymentWidget);
+    paymentTotalLabel->setStyleSheet(
+        "QLabel {"
+        "   background: linear-gradient(135deg, #10b981 0%, #059669 100%);"
+        "   color: white;"
+        "   padding: 15px;"
+        "   border-radius: 8px;"
+        "   font-size: 22px;"
+        "   font-weight: bold;"
+        "   text-align: center;"
+        "}"
+    );
+    layout->addWidget(totalDescLabel);
+    layout->addWidget(paymentTotalLabel);
+    layout->addSpacing(15);
+
+    // Formulaire de paiement
+    QFormLayout *formLayout = new QFormLayout();
+    formLayout->setSpacing(15);
+    formLayout->setLabelAlignment(Qt::AlignRight | Qt::AlignVCenter);
+
+    // Mode de paiement
+    QLabel *methodLabel = new QLabel("Mode de paiement:", paymentWidget);
+    methodLabel->setStyleSheet("color: #cbd5e1; font-weight: 600;");
+    paymentMethodCombo = new QComboBox(paymentWidget);
+    paymentMethodCombo->addItem("💵 Espèces");
+    paymentMethodCombo->addItem("💳 Carte Bancaire");
+    paymentMethodCombo->addItem("📱 Mobile Payment");
+    paymentMethodCombo->addItem("🏦 Chèque");
+    paymentMethodCombo->setMinimumHeight(40);
+    paymentMethodCombo->setStyleSheet(
+        "QComboBox {"
+        "   border: 2px solid #475569;"
+        "   border-radius: 6px;"
+        "   padding: 8px;"
+        "   font-size: 14px;"
+        "   background: #1e293b;"
+        "   color: #f1f5f9;"
+        "}"
+        "QComboBox:focus {"
+        "   border: 2px solid #10b981;"
+        "}"
+        "QComboBox::drop-down {"
+        "   border: none;"
+        "}"
+        "QComboBox::down-arrow {"
+        "   image: none;"
+        "}"
+    );
+    formLayout->addRow(methodLabel, paymentMethodCombo);
+
+    // Montant à payer
+    QLabel *amountLabel = new QLabel("Montant à payer:", paymentWidget);
+    amountLabel->setStyleSheet("color: #cbd5e1; font-weight: 600;");
+    paymentAmountSpinBox = new QDoubleSpinBox(paymentWidget);
+    paymentAmountSpinBox->setMinimum(0);
+    paymentAmountSpinBox->setMaximum(999999.99);
+    paymentAmountSpinBox->setDecimals(2);
+    paymentAmountSpinBox->setSingleStep(0.01);
+    paymentAmountSpinBox->setMinimumHeight(40);
+    paymentAmountSpinBox->setStyleSheet(
+        "QDoubleSpinBox {"
+        "   border: 2px solid #475569;"
+        "   border-radius: 6px;"
+        "   padding: 8px;"
+        "   font-size: 14px;"
+        "   background: #1e293b;"
+        "   color: #f1f5f9;"
+        "}"
+        "QDoubleSpinBox:focus {"
+        "   border: 2px solid #10b981;"
+        "}"
+        "QAbstractSpinBox::up-button, QAbstractSpinBox::down-button {"
+        "   background-color: #334155;"
+        "   border: none;"
+        "   color: #f1f5f9;"
+        "}"
+    );
+    // Connecter le signal pour mettre à jour le statut dynamiquement
+    connect(paymentAmountSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &OrderDialog::updatePaymentStatus);
+    formLayout->addRow(amountLabel, paymentAmountSpinBox);
+
+    layout->addLayout(formLayout);
+
+    // Bouton utiliser le total
+    paymentUseFullAmountBtn = new QPushButton("↔️ Utiliser le montant total", paymentWidget);
+    paymentUseFullAmountBtn->setMinimumHeight(38);
+    paymentUseFullAmountBtn->setStyleSheet(
+        "QPushButton {"
+        "   background-color: #0ea5e9;"
+        "   color: white;"
+        "   border: none;"
+        "   border-radius: 6px;"
+        "   font-weight: 600;"
+        "   font-size: 13px;"
+        "}"
+        "QPushButton:hover {"
+        "   background-color: #0284c7;"
+        "}"
+        "QPushButton:pressed {"
+        "   background-color: #0c63e4;"
+        "}"
+    );
+    connect(paymentUseFullAmountBtn, &QPushButton::clicked, this, [this]() {
+        paymentAmountSpinBox->setValue(totalAmount);
+    });
+    layout->addWidget(paymentUseFullAmountBtn);
+
+    layout->addSpacing(10);
+
+    // Statut du paiement
+    paymentStatusLabel = new QLabel(paymentWidget);
+    paymentStatusLabel->setStyleSheet(
+        "QLabel {"
+        "   background: #1e293b;"
+        "   color: #f1f5f9;"
+        "   padding: 12px;"
+        "   border-radius: 6px;"
+        "   border-left: 4px solid #10b981;"
+        "   font-weight: 600;"
+        "}"
+    );
+    layout->addWidget(paymentStatusLabel);
+
+    layout->addStretch();
+
+    // Boutons d'action
+    QHBoxLayout *buttonLayout = new QHBoxLayout();
+    buttonLayout->addStretch();
+
+    previousPaymentBtn = new QPushButton("Précédent", paymentWidget);
+    previousPaymentBtn->setMinimumHeight(48);
+    previousPaymentBtn->setMinimumWidth(120);
+    previousPaymentBtn->setCursor(Qt::PointingHandCursor);
+    previousPaymentBtn->setStyleSheet(
+        "QPushButton {"
+        "   background: transparent;"
+        "   color: #667eea;"
+        "   border: 2px solid #667eea;"
+        "   border-radius: 10px;"
+        "   font-weight: 700;"
+        "   font-size: 14px;"
+        "   padding: 8px 20px;"
+        "}"
+        "QPushButton:hover {"
+        "   background: #667eea;"
+        "   color: white;"
+        "}"
+        "QPushButton:pressed {"
+        "   background: #5568d3;"
+        "}"
+    );
+    connect(previousPaymentBtn, &QPushButton::clicked, this, &OrderDialog::onPreviousFromPayment);
+    buttonLayout->addWidget(previousPaymentBtn);
+
+    QPushButton *cancelPaymentBtn = new QPushButton("Annuler", paymentWidget);
+    cancelPaymentBtn->setMinimumHeight(48);
+    cancelPaymentBtn->setMinimumWidth(120);
+    cancelPaymentBtn->setCursor(Qt::PointingHandCursor);
+    cancelPaymentBtn->setStyleSheet(
+        "QPushButton {"
+        "   background: transparent;"
+        "   color: #e53e3e;"
+        "   border: 2px solid #e53e3e;"
+        "   border-radius: 10px;"
+        "   font-weight: 700;"
+        "   font-size: 14px;"
+        "   padding: 8px 20px;"
+        "}"
+        "QPushButton:hover {"
+        "   background: #e53e3e;"
+        "   color: white;"
+        "}"
+        "QPushButton:pressed {"
+        "   background: #c53030;"
+        "}"
+    );
+    connect(cancelPaymentBtn, &QPushButton::clicked, this, &OrderDialog::onCancelOrder);
+    buttonLayout->addWidget(cancelPaymentBtn);
+
+    confirmPaymentBtn = new QPushButton("✓ Confirmer le paiement", paymentWidget);
+    confirmPaymentBtn->setMinimumHeight(48);
+    confirmPaymentBtn->setMinimumWidth(180);
+    confirmPaymentBtn->setCursor(Qt::PointingHandCursor);
+    confirmPaymentBtn->setStyleSheet(
+        "QPushButton {"
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #10b981, stop:1 #059669);"
+        "   color: white;"
+        "   border: none;"
+        "   border-radius: 10px;"
+        "   font-weight: 700;"
+        "   font-size: 15px;"
+        "   padding: 8px 30px;"
+        "}"
+        "QPushButton:hover {"
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #059669, stop:1 #047857);"
+        "}"
+        "QPushButton:pressed {"
+        "   background: #047857;"
+        "}"
+    );
+    connect(confirmPaymentBtn, &QPushButton::clicked, this, &OrderDialog::onConfirmPayment);
+    buttonLayout->addWidget(confirmPaymentBtn);
+
+    layout->addLayout(buttonLayout);
+
+    stackedWidget->addWidget(paymentWidget);
 }
 
 void OrderDialog::addProduct(int productId, const QString &productName, double unitPrice, int quantity)
@@ -341,7 +694,24 @@ void OrderDialog::onNextStep()
 {
     // Validation des champs obligatoires
     if (nomEdit->text().trimmed().isEmpty()) {
-        QMessageBox::warning(this, "Champ obligatoire", "Le nom du client est obligatoire.");
+        QMessageBox::warning(this, "Erreur de validation", "Le nom du client est obligatoire.");
+        nomEdit->setFocus();
+        return;
+    }
+
+    // Validation du numéro de téléphone s'il est fourni
+    QString telephone = telephoneEdit->text().trimmed();
+    if (!telephone.isEmpty() && telephone.length() < 8) {
+        QMessageBox::warning(this, "Erreur de validation", "Le numéro de téléphone doit contenir au moins 8 chiffres.");
+        telephoneEdit->setFocus();
+        return;
+    }
+
+    // Validation de l'email s'il est fourni
+    QString email = emailEdit->text().trimmed();
+    if (!email.isEmpty() && !email.contains("@")) {
+        QMessageBox::warning(this, "Erreur de validation", "L'adresse email n'est pas valide.");
+        emailEdit->setFocus();
         return;
     }
 
@@ -363,11 +733,8 @@ void OrderDialog::onPreviousStep()
 
 void OrderDialog::onValidateOrder()
 {
-    if (saveClientAndOrder()) {
-        QMessageBox::information(this, "Commande validée",
-                               QString("La commande a été créée avec succès pour un montant de %1 €.").arg(QString::number(totalAmount, 'f', 2)));
-        accept();
-    }
+    // Cette fonction est obsolète, elle est remplacée par onContinueToPayment() puis onConfirmPayment()
+    // Garder pour compatibilité au cas où elle serait appelée ailleurs
 }
 
 void OrderDialog::onCancelOrder()
@@ -403,7 +770,7 @@ void OrderDialog::updateTotal()
         totalAmount += item.total;
     }
     if (totalLabel) {
-        totalLabel->setText(QString("Total: %1 €").arg(QString::number(totalAmount, 'f', 2)));
+        totalLabel->setText(QString("Total: %1 Ar").arg(QString::number(totalAmount, 'f', 2)));
     }
 }
 
@@ -421,13 +788,13 @@ void OrderDialog::updateTable()
         orderTable->setItem(row, 0, new QTableWidgetItem(item.productName));
 
         // Prix unitaire
-        orderTable->setItem(row, 1, new QTableWidgetItem(QString::number(item.unitPrice, 'f', 2) + " €"));
+        orderTable->setItem(row, 1, new QTableWidgetItem(QString::number(item.unitPrice, 'f', 2) + " Ar"));
 
         // Quantité
         orderTable->setItem(row, 2, new QTableWidgetItem(QString::number(item.quantity)));
 
         // Total pour cet article
-        orderTable->setItem(row, 3, new QTableWidgetItem(QString::number(item.total, 'f', 2) + " €"));
+        orderTable->setItem(row, 3, new QTableWidgetItem(QString::number(item.total, 'f', 2) + " Ar"));
 
         // Bouton de suppression
         QWidget *actionWidget = new QWidget();
@@ -472,161 +839,355 @@ void OrderDialog::updateTable()
     }
 }
 
-bool OrderDialog::saveClientAndOrder()
+int OrderDialog::saveClientAndOrder(double paidAmount)
 {
     QSqlQuery query;
 
-    if (isEditMode) {
-        // Mode édition: mettre à jour la commande existante
+    // 1. Insérer le client
+    query.prepare("INSERT INTO CLIENTS (nom, prenom, telephone, email, adresse) "
+                  "VALUES (?, ?, ?, ?, ?)");
+    query.addBindValue(nomEdit->text().trimmed());
+    query.addBindValue(prenomEdit->text().trimmed());
+    query.addBindValue(telephoneEdit->text().trimmed());
+    query.addBindValue(emailEdit->text().trimmed());
+    query.addBindValue(adresseEdit->toPlainText().trimmed());
 
-        // 1. Récupérer l'id_client de la commande existante
-        query.prepare("SELECT id_client FROM COMMANDES WHERE id_commande = ?");
-        query.addBindValue(editCommandeId.toInt());
-        if (!query.exec() || !query.next()) {
-            QMessageBox::critical(this, "Erreur", "Impossible de trouver la commande à modifier.");
-            return false;
-        }
-        int clientId = query.value("id_client").toInt();
+    if (!query.exec()) {
+        QMessageBox::critical(this, "Erreur", "Erreur lors de la création du client: " + query.lastError().text());
+        return -1;
+    }
 
-        // 2. Mettre à jour le client
-        query.prepare("UPDATE CLIENTS SET nom = ?, prenom = ?, telephone = ?, email = ?, adresse = ? "
-                      "WHERE id_client = ?");
-        query.addBindValue(nomEdit->text().trimmed());
-        query.addBindValue(prenomEdit->text().trimmed());
-        query.addBindValue(telephoneEdit->text().trimmed());
-        query.addBindValue(emailEdit->text().trimmed());
-        query.addBindValue(adresseEdit->toPlainText().trimmed());
-        query.addBindValue(clientId);
+    int clientId = query.lastInsertId().toInt();
 
-        if (!query.exec()) {
-            QMessageBox::critical(this, "Erreur", "Erreur lors de la mise à jour du client: " + query.lastError().text());
-            return false;
-        }
+    // 2. Déterminer le statut du paiement
+    QString paymentStatus = "EN_COURS"; // Par défaut
+    if (paidAmount >= totalAmount) {
+        paymentStatus = "PAYEE";
+    }
 
-        // 3. Mettre à jour la commande
-        query.prepare("UPDATE COMMANDES SET total = ? WHERE id_commande = ?");
-        query.addBindValue(totalAmount);
-        query.addBindValue(editCommandeId.toInt());
+    // 3. Insérer la commande avec le statut déterminé
+    query.prepare("INSERT INTO COMMANDES (id_client, id_user, total, statut) "
+                  "VALUES (?, ?, ?, ?)");
+    query.addBindValue(clientId);
+    query.addBindValue(currentUserId);
+    query.addBindValue(totalAmount);
+    query.addBindValue(paymentStatus);
 
-        if (!query.exec()) {
-            QMessageBox::critical(this, "Erreur", "Erreur lors de la mise à jour de la commande: " + query.lastError().text());
-            return false;
-        }
+    if (!query.exec()) {
+        QMessageBox::critical(this, "Erreur", "Erreur lors de la création de la commande: " + query.lastError().text());
+        return -1;
+    }
 
-        // 4. Supprimer les anciens détails et en ajouter de nouveaux
-        query.prepare("DELETE FROM COMMANDE_DETAIL WHERE id_commande = ?");
-        query.addBindValue(editCommandeId.toInt());
-        if (!query.exec()) {
-            QMessageBox::critical(this, "Erreur", "Erreur lors de la suppression des anciens détails: " + query.lastError().text());
-            return false;
-        }
+    int commandeId = query.lastInsertId().toInt();
 
-        // 5. Insérer les nouveaux détails
-        for (const OrderItem &item : orderItems) {
-            query.prepare("INSERT INTO COMMANDE_DETAIL (id_commande, id_produit, quantite) "
-                          "VALUES (?, ?, ?)");
-            query.addBindValue(editCommandeId.toInt());
-            query.addBindValue(item.productId);
-            query.addBindValue(item.quantity);
-
-            if (!query.exec()) {
-                QMessageBox::critical(this, "Erreur", "Erreur lors de la mise à jour des détails de commande: " + query.lastError().text());
-                return false;
-            }
-        }
-
-    } else {
-        // Mode création: créer une nouvelle commande
-
-        // 1. Insérer le client
-        query.prepare("INSERT INTO CLIENTS (nom, prenom, telephone, email, adresse) "
+    // 4. Insérer les détails de la commande
+    for (const OrderItem &item : orderItems) {
+        query.prepare("INSERT INTO DETAILS_COMMANDE (id_commande, id_produit, quantite, prix_unitaire, total) "
                       "VALUES (?, ?, ?, ?, ?)");
-        query.addBindValue(nomEdit->text().trimmed());
-        query.addBindValue(prenomEdit->text().trimmed());
-        query.addBindValue(telephoneEdit->text().trimmed());
-        query.addBindValue(emailEdit->text().trimmed());
-        query.addBindValue(adresseEdit->toPlainText().trimmed());
+        query.addBindValue(commandeId);
+        query.addBindValue(item.productId);
+        query.addBindValue(item.quantity);
+        query.addBindValue(item.unitPrice);
+        query.addBindValue(item.total);
 
         if (!query.exec()) {
-            QMessageBox::critical(this, "Erreur", "Erreur lors de la création du client: " + query.lastError().text());
-            return false;
-        }
-
-        int clientId = query.lastInsertId().toInt();
-
-        // 2. Insérer la commande
-        query.prepare("INSERT INTO COMMANDES (id_client, id_user, total, statut) "
-                      "VALUES (?, ?, ?, 'EN_COURS')");
-        query.addBindValue(clientId);
-        query.addBindValue(currentUserId);
-        query.addBindValue(totalAmount);
-
-        if (!query.exec()) {
-            QMessageBox::critical(this, "Erreur", "Erreur lors de la création de la commande: " + query.lastError().text());
-            return false;
-        }
-
-        int commandeId = query.lastInsertId().toInt();
-
-        // 3. Insérer les détails de la commande
-        for (const OrderItem &item : orderItems) {
-            query.prepare("INSERT INTO COMMANDE_DETAIL (id_commande, id_produit, quantite) "
-                          "VALUES (?, ?, ?)");
-            query.addBindValue(commandeId);
-            query.addBindValue(item.productId);
-            query.addBindValue(item.quantity);
-
-            if (!query.exec()) {
-                QMessageBox::critical(this, "Erreur", "Erreur lors de l'ajout des détails de commande: " + query.lastError().text());
-                return false;
-            }
+            QMessageBox::critical(this, "Erreur", "Erreur lors de l'ajout des détails de commande: " + query.lastError().text());
+            return -1;
         }
     }
 
+    // 5. Mettre à jour le stock des produits
+    for (const OrderItem &item : orderItems) {
+        query.prepare("UPDATE PRODUITS SET stock = stock - ? WHERE id_produit = ?");
+        query.addBindValue(item.quantity);
+        query.addBindValue(item.productId);
+
+        if (!query.exec()) {
+            QMessageBox::critical(this, "Erreur", "Erreur lors de la mise à jour du stock: " + query.lastError().text());
+            return -1;
+        }
+    }
+
+    // 5. Insérer le paiement avec le montant réellement payé
+    query.prepare("INSERT INTO PAIEMENTS (id_commande, montant, statut) "
+                  "VALUES (?, ?, 'VALIDE')");
+    query.addBindValue(commandeId);
+    query.addBindValue(paidAmount);
+
+    if (!query.exec()) {
+        QMessageBox::critical(this, "Erreur", "Erreur lors de l'enregistrement du paiement: " + query.lastError().text());
+        return -1;
+    }
+
+    // 6. Le statut de la commande a déjà été défini correctement lors de l'insertion
+    // (pas besoin de UPDATE supplémentaire)
+
+    return commandeId;
+}
+
+bool OrderDialog::checkStocks()
+{
+    QSqlQuery query;
+    for (auto it = orderItems.begin(); it != orderItems.end(); ++it) {
+        query.prepare("SELECT stock FROM PRODUITS WHERE id_produit = ?");
+        query.addBindValue(it.key());
+        if (query.exec() && query.next()) {
+            int stock = query.value(0).toInt();
+            if (it.value().quantity > stock) {
+                return false;
+            }
+        } else {
+            return false; // Erreur ou produit non trouvé
+        }
+    }
     return true;
 }
 
 void OrderDialog::loadOrderForEdit(const QString &commandeId)
 {
+    // Charger les informations de la commande
     QSqlQuery query;
-
-    // Charger les informations de la commande et du client
-    query.prepare("SELECT c.id_client, cl.nom, cl.prenom, cl.telephone, cl.email, cl.adresse, "
-                  "c.total, c.statut "
+    query.prepare("SELECT c.date_commande, cl.nom, cl.prenom, cl.telephone, cl.email, cl.adresse, c.total "
                   "FROM COMMANDES c "
                   "LEFT JOIN CLIENTS cl ON c.id_client = cl.id_client "
                   "WHERE c.id_commande = ?");
     query.addBindValue(commandeId.toInt());
-
+    
     if (query.exec() && query.next()) {
-        // Stocker les informations du client dans les variables membres
+        // Remplir les champs client
         clientNom = query.value("nom").toString();
         clientPrenom = query.value("prenom").toString();
         clientTelephone = query.value("telephone").toString();
         clientEmail = query.value("email").toString();
         clientAdresse = query.value("adresse").toString();
-
-        totalAmount = query.value("total").toDouble();
-
+        
+        // Mettre à jour l'interface client
+        nomEdit->setText(clientNom);
+        prenomEdit->setText(clientPrenom);
+        telephoneEdit->setText(clientTelephone);
+        emailEdit->setText(clientEmail);
+        adresseEdit->setText(clientAdresse);
+        
         // Charger les détails de la commande
         QSqlQuery detailQuery;
-        detailQuery.prepare("SELECT cd.id_produit, p.nom_produit, p.prix, cd.quantite "
+        detailQuery.prepare("SELECT cd.id_produit, p.nom, p.prix_vente, cd.quantite, cd.total "
                            "FROM COMMANDE_DETAIL cd "
                            "LEFT JOIN PRODUITS p ON cd.id_produit = p.id_produit "
                            "WHERE cd.id_commande = ?");
         detailQuery.addBindValue(commandeId.toInt());
-
+        
         if (detailQuery.exec()) {
             while (detailQuery.next()) {
                 int productId = detailQuery.value("id_produit").toInt();
-                QString productName = detailQuery.value("nom_produit").toString();
-                double unitPrice = detailQuery.value("prix").toDouble();
+                QString productName = detailQuery.value("nom").toString();
+                double unitPrice = detailQuery.value("prix_vente").toDouble();
                 int quantity = detailQuery.value("quantite").toInt();
-
+                
                 addProduct(productId, productName, unitPrice, quantity);
             }
         }
-    } else {
-        QMessageBox::critical(this, "Erreur", "Impossible de charger la commande: " + query.lastError().text());
+        
+        // Passer directement à l'étape de récapitulatif
+        stackedWidget->setCurrentWidget(orderWidget);
+        updateTotal();
+        updateTable();
     }
+}
+
+void OrderDialog::reset()
+{
+    orderItems.clear();
+    totalAmount = 0.0;
+    resetUI();
+}
+
+void OrderDialog::onContinueToPayment()
+{
+    // Validation des stocks
+    if (!checkStocks()) {
+        QMessageBox::warning(this, "Stock insuffisant", 
+                           "Un ou plusieurs produits dans votre commande n'ont plus assez de stock disponible.");
+        return;
+    }
+
+    // Mettre à jour le formulaire de paiement avec le montant
+    paymentTotalLabel->setText(QString("%1 Ar").arg(QString::number(totalAmount, 'f', 2)));
+    paymentAmountSpinBox->setValue(totalAmount);
+    paymentAmountSpinBox->setMinimum(0);
+    paymentAmountSpinBox->setMaximum(totalAmount * 2); // Permet de payer 2x le montant si besoin
+    paymentMethodCombo->setCurrentIndex(0); // Espèces par défaut
+    
+    // Mettre à jour le statut du paiement
+    updatePaymentStatus();
+
+    // Passer à l'étape 3 (paiement)
+    stackedWidget->setCurrentIndex(2);
+}
+
+void OrderDialog::updatePaymentStatus()
+{
+    double paidAmount = paymentAmountSpinBox->value();
+    
+    if (paidAmount == 0) {
+        paymentStatusLabel->setText("⏳ Aucun montant saisi");
+        paymentStatusLabel->setStyleSheet(
+            "QLabel {"
+            "   background: #1e293b;"
+            "   color: #f1f5f9;"
+            "   padding: 12px;"
+            "   border-radius: 6px;"
+            "   border-left: 4px solid #94a3b8;"
+            "   font-weight: 600;"
+            "}"
+        );
+    } else if (paidAmount == totalAmount) {
+        paymentStatusLabel->setText(QString("✓ Paiement complet (%1 Ar)").arg(totalAmount, 0, 'f', 2));
+        paymentStatusLabel->setStyleSheet(
+            "QLabel {"
+            "   background: #1e293b;"
+            "   color: #f1f5f9;"
+            "   padding: 12px;"
+            "   border-radius: 6px;"
+            "   border-left: 4px solid #10b981;"
+            "   font-weight: 600;"
+            "}"
+        );
+    } else if (paidAmount < totalAmount) {
+        double remaining = totalAmount - paidAmount;
+        paymentStatusLabel->setText(QString("⏳ Paiement partiel - Reste: %1 Ar").arg(remaining, 0, 'f', 2));
+        paymentStatusLabel->setStyleSheet(
+            "QLabel {"
+            "   background: #1e293b;"
+            "   color: #f1f5f9;"
+            "   padding: 12px;"
+            "   border-radius: 6px;"
+            "   border-left: 4px solid #f59e0b;"
+            "   font-weight: 600;"
+            "}"
+        );
+    } else {
+        double change = paidAmount - totalAmount;
+        paymentStatusLabel->setText(QString("✓ Surplus: %1 Ar (Monnaie à rendre)").arg(change, 0, 'f', 2));
+        paymentStatusLabel->setStyleSheet(
+            "QLabel {"
+            "   background: #1e293b;"
+            "   color: #f1f5f9;"
+            "   padding: 12px;"
+            "   border-radius: 6px;"
+            "   border-left: 4px solid #8b5cf6;"
+            "   font-weight: 600;"
+            "}"
+        );
+    }
+}
+
+void OrderDialog::onPreviousFromPayment()
+{
+    // Revenir à l'étape 2 (récapitulatif)
+    stackedWidget->setCurrentIndex(1);
+}
+
+void OrderDialog::onConfirmPayment()
+{
+    qDebug() << "=== onConfirmPayment() called ===";
+    
+    // Validation du montant
+    double paidAmount = paymentAmountSpinBox->value();
+    
+    if (paidAmount <= 0) {
+        QMessageBox::warning(this, "Erreur", "Le montant payé doit être supérieur à 0 Ar");
+        return;
+    }
+    
+    // Valider le mode de paiement
+    if (paymentMethodCombo->currentIndex() < 0) {
+        QMessageBox::warning(this, "Erreur", "Veuillez sélectionner un mode de paiement");
+        return;
+    }
+    
+    QString paymentMethod = paymentMethodCombo->currentText();
+    // Enlever l'emoji pour garder seulement le texte
+    paymentMethod = paymentMethod.mid(paymentMethod.indexOf(" ") + 1);
+    
+    qDebug() << "Payment confirmed - Amount:" << paidAmount << "Ar - Method:" << paymentMethod;
+    
+    // Sauvegarder client, commande, détails et paiement avec le montant payé
+    int commandeId = saveClientAndOrder(paidAmount);
+    qDebug() << "saveClientAndOrder returned commandeId:" << commandeId;
+    
+    if (commandeId != -1) {
+        // Déterminer le message basé sur le statut du paiement
+        QString paymentStatus = (paidAmount >= totalAmount) ? "PAYEE" : "EN_COURS";
+        QString displayPaymentStatus = (paidAmount >= totalAmount) ? "Payée" : "En cours";
+        QString statusMessage;
+        double remainingAmount = totalAmount - paidAmount;
+        
+        if (paidAmount >= totalAmount) {
+            statusMessage = QString("✓ Commande PAYÉE - Montant reçu: %1 Ar").arg(paidAmount, 0, 'f', 2);
+        } else {
+            statusMessage = QString("⏳ Commande EN COURS - Montant reçu: %1 Ar - Reste: %2 Ar")
+                .arg(paidAmount, 0, 'f', 2)
+                .arg(remainingAmount, 0, 'f', 2);
+        }
+        
+        // Générer le PDF de reçu
+        qDebug() << "Generating receipt for command ID:" << commandeId;
+        ReceiptData receiptData = ReceiptGenerator::getReceiptData(commandeId);
+        qDebug() << "Receipt data retrieved";
+        qDebug() << "  Client email:" << receiptData.client.email;
+        qDebug() << "  Order ID:" << receiptData.order.id;
+        qDebug() << "  Payment amount:" << receiptData.payment.montant;
+        
+        // Ajouter le montant restant à la structure
+        receiptData.remainingAmount = remainingAmount;
+        
+        ReceiptGenerator generator;
+        
+        // Générer le PDF et récupérer le chemin
+        QString documentsPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+        QString pdfFilePath = QString("%1/Recu_Commande_%2_%3.pdf")
+            .arg(documentsPath)
+            .arg(commandeId)
+            .arg(QDateTime::currentDateTime().toString("ddMMyyyy_hhmmss"));
+        
+        qDebug() << "PDF file path:" << pdfFilePath;
+        generator.generatePDF(receiptData, pdfFilePath);
+        qDebug() << "PDF generated successfully";
+        
+        // Envoyer le PDF par email si l'email client est disponible
+        if (!receiptData.client.email.isEmpty()) {
+            qDebug() << "Email address is not empty, attempting to send email to:" << receiptData.client.email;
+            bool emailSent = generator.sendReceiptByEmail(receiptData.client.email, pdfFilePath, receiptData);
+            qDebug() << "Email send result:" << (emailSent ? "SUCCESS" : "FAILED");
+            
+            if (emailSent) {
+                QMessageBox::information(this, "Commande créée - " + displayPaymentStatus,
+                                       statusMessage + QString("\n\nLe reçu a été généré et un email a été envoyé à %1.\n\nMode de paiement: %2").arg(receiptData.client.email).arg(paymentMethod));
+            } else {
+                qWarning() << "Email sending failed";
+                QMessageBox::information(this, "Commande créée - " + displayPaymentStatus,
+                                       statusMessage + QString("\n\nLe reçu a été généré et ouvert.\n\nMode de paiement: %1").arg(paymentMethod));
+            }
+        } else {
+            qWarning() << "Email address is empty!";
+            QMessageBox::information(this, "Commande créée - " + displayPaymentStatus,
+                                   statusMessage + QString("\n\nLe reçu a été généré et ouvert.\n\nMode de paiement: %1\n\nAucun email envoyé - adresse email non disponible.").arg(paymentMethod));
+        }
+        
+        emit orderSaved();
+        reset();
+        accept();
+    } else {
+        qWarning() << "Failed to save client and order";
+    }
+}
+
+void OrderDialog::resetUI()
+{
+    nomEdit->clear();
+    prenomEdit->clear();
+    telephoneEdit->clear();
+    emailEdit->clear();
+    adresseEdit->clear();
+    stackedWidget->setCurrentIndex(0);
 }

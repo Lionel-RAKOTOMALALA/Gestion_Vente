@@ -21,10 +21,12 @@ public:
 private slots:
     void onSearchTextChanged(const QString &text);
     void onStatusFilterChanged(const QString &status);
+    void onPaymentFilterChanged(const QString &filter);
     void onRefreshClicked();
     void onViewOrderDetails(int row, int column);
     void onEditOrder(const QString &commandeId);
     void onDeleteOrder(const QString &commandeId);
+    void onNotifyUnpaidOrder(int orderId);
     void onFirstPageClicked();
     void onPreviousPageClicked();
     void onNextPageClicked();
@@ -39,6 +41,7 @@ private:
     QTableWidget *ordersTable;
     QLineEdit *searchInput;
     QComboBox *statusFilter;
+    QComboBox *paymentFilter;
     QPushButton *refreshBtn;
     
     // Pagination
@@ -54,6 +57,7 @@ private:
     
     QString currentSearchText;
     QString currentStatusFilter;
+    QString currentPaymentFilter;
     
     // Pagination data
     int currentPage;
