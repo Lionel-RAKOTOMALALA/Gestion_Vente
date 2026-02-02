@@ -7,6 +7,7 @@
 #include <QHBoxLayout>
 #include <QGraphicsEffect>
 #include <QMap>
+#include "chartswidget.h"
 
 struct DashboardStats {
     QString title;
@@ -48,11 +49,18 @@ class DashboardPage : public QFrame
 
 public:
     explicit DashboardPage(QWidget *parent = nullptr);
+    void setUserRole(const QString& role, int userId = -1);
 
 private:
     void setupUI();
+    void setupAdminDashboard();
+    void setupVendorDashboard();
     QList<DashboardStats> getStaticData();
     QWidget* createChartPlaceholder();
+
+    QString userRole;
+    int currentUserId;
+    ChartsWidget *chartsWidget;
 };
 
 #endif // DASHBOARDPAGE_H

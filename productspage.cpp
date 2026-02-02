@@ -656,7 +656,7 @@ void ProductsPage::loadProducts()
 
 void ProductsPage::onAddProduct()
 {
-    ProductDialog dialog(this);
+    ProductDialog dialog(this, -1, userId);
     if (dialog.exec() == QDialog::Accepted) {
         loadProducts();
     }
@@ -664,7 +664,7 @@ void ProductsPage::onAddProduct()
 
 void ProductsPage::onEditProduct(int productId)
 {
-    ProductDialog dialog(this, productId);
+    ProductDialog dialog(this, productId, userId);
     if (dialog.exec() == QDialog::Accepted) {
         loadProducts();
     }

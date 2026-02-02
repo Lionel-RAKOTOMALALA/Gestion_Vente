@@ -13,8 +13,8 @@
 #include <QDoubleValidator>
 #include <QIntValidator>
 
-ProductDialog::ProductDialog(QWidget *parent, int productId)
-    : QDialog(parent), currentProductId(productId), selectedImagePath("")
+ProductDialog::ProductDialog(QWidget *parent, int productId, int userId)
+    : QDialog(parent), currentProductId(productId), selectedImagePath(""), currentUserId(userId)
 {
     setupUI();
     if (productId != -1) {
@@ -351,6 +351,28 @@ void ProductDialog::onSave()
             "Succès",
             currentProductId == -1 ? "Produit ajouté avec succès!" : "Produit modifié avec succès!"
         );
+
+        if (currentProductId == -1) {
+            int newProductId = query.lastInsertId().toInt();
+            int stock = txtStock->text().toInt();
+            
+            // Créer le mouvement de stock initial automatiquement
+            if (stock > 0) {
+                QSqlQuery mq;
+                mq.prepare("INSERT INTO STOCK_MOVEMENTS (id_product, type, quantite, motif, id_user) "
+                          "VALUES (?, ?, ?, ?, ?)");
+                mq.addBindValue(newProductId);
+                mq.addBindValue(QString("ENTREE"));
+                mq.addBindValue(stock);
+                mq.addBindValue(QString("Stock initial - Nouveau produit"));
+                mq.addBindValue(currentUserId == -1 ? QVariant() : currentUserId);
+                
+                if (!mq.exec()) {
+                    qDebug() << "Erreur lors de la création du mouvement initial:" << mq.lastError().text();
+                }
+            }
+        }
+
         accept();
     } else {
         QMessageBox::critical(this, "Erreur",

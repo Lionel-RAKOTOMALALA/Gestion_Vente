@@ -17,6 +17,7 @@ class ProductsPage;
 class OrdersPage;
 class PaymentsPage;
 class CashPage;
+class StockMovementPage;
 
 class MainWindow : public QMainWindow
 {

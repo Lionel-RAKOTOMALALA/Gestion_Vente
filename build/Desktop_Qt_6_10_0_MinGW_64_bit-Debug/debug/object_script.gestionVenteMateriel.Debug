@@ -1,4 +1,6 @@
 debug/cashpage.o
+debug/chartsmanager.o
+debug/chartswidget.o
 debug/clientdialog.o
 debug/clientspage.o
 debug/connexion.o
@@ -16,12 +18,14 @@ debug/productspage.o
 debug/receiptgenerator.o
 debug/sidebar.o
 debug/smtpclient.o
+debug/stockmovementpage.o
 debug/stylesheet.o
 debug/thememanager.o
 debug/userdialog.o
 debug/userspage.o
 debug/qrc_resources.o
 debug/moc_cashpage.o
+debug/moc_chartswidget.o
 debug/moc_clientdialog.o
 debug/moc_clientspage.o
 debug/moc_dashboardpage.o
@@ -36,6 +40,7 @@ debug/moc_productdialog.o
 debug/moc_productspage.o
 debug/moc_sidebar.o
 debug/moc_smtpclient.o
+debug/moc_stockmovementpage.o
 debug/moc_thememanager.o
 debug/moc_userdialog.o
 debug/moc_userspage.o

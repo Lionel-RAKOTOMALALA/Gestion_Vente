@@ -12,7 +12,7 @@ class ProductDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit ProductDialog(QWidget *parent = nullptr, int productId = -1);
+    explicit ProductDialog(QWidget *parent = nullptr, int productId = -1, int userId = -1);
 
 private slots:
     void onSave();
@@ -38,6 +38,7 @@ private:
     QPushButton *btnCancel;
 
     QString selectedImagePath;
+    int currentUserId;
 };
 
 #endif // PRODUCTDIALOG_H

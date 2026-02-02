@@ -1,4 +1,6 @@
 release/cashpage.o
+release/chartsmanager.o
+release/chartswidget.o
 release/clientdialog.o
 release/clientspage.o
 release/connexion.o
@@ -16,12 +18,14 @@ release/productspage.o
 release/receiptgenerator.o
 release/sidebar.o
 release/smtpclient.o
+release/stockmovementpage.o
 release/stylesheet.o
 release/thememanager.o
 release/userdialog.o
 release/userspage.o
 release/qrc_resources.o
 release/moc_cashpage.o
+release/moc_chartswidget.o
 release/moc_clientdialog.o
 release/moc_clientspage.o
 release/moc_dashboardpage.o
@@ -36,6 +40,7 @@ release/moc_productdialog.o
 release/moc_productspage.o
 release/moc_sidebar.o
 release/moc_smtpclient.o
+release/moc_stockmovementpage.o
 release/moc_thememanager.o
 release/moc_userdialog.o
 release/moc_userspage.o

@@ -153,128 +153,7 @@ void OrderDialog::setupClientForm()
     formLayout->addRow("Adresse:", adresseEdit);
 
     layout->addLayout(formLayout);
-
-    // Ajouter la section des produits
-    QLabel *productsTitle = new QLabel("Produits", clientWidget);
-    productsTitle->setStyleSheet("font-size: 14px; font-weight: bold; margin-top: 20px; margin-bottom: 10px; color: #10b981;");
-    layout->addWidget(productsTitle);
-
-    // Créer une scroll area avec la liste des produits
-    QScrollArea *scrollArea = new QScrollArea(clientWidget);
-    scrollArea->setWidgetResizable(true);
-    scrollArea->setStyleSheet(
-        "QScrollArea {"
-        "   background: #1e293b;"
-        "   border: 1px solid #334155;"
-        "   border-radius: 4px;"
-        "}"
-    );
-    
-    QWidget *productsContainerWidget = new QWidget();
-    QVBoxLayout *productsLayout = new QVBoxLayout(productsContainerWidget);
-    productsLayout->setContentsMargins(0, 0, 0, 0);
-    
-    // Charger les produits depuis la base de données
-    QSqlQuery query;
-    query.exec("SELECT id_produit, nom_produit, prix_vente, stock FROM PRODUITS WHERE stock > 0");
-    
-    if (!query.next()) {
-        // Aucun produit disponible
-        QLabel *noProductLabel = new QLabel("Aucun produit", productsContainerWidget);
-        noProductLabel->setStyleSheet("color: #cbd5e1; padding: 10px;");
-        productsLayout->addWidget(noProductLabel);
-    } else {
-        // Afficher les produits
-        do {
-            int productId = query.value(0).toInt();
-            QString productName = query.value(1).toString();
-            double price = query.value(2).toDouble();
-            int stock = query.value(3).toInt();
-            
-            // Créer un widget pour le produit
-            QWidget *productItemWidget = new QWidget();
-            QHBoxLayout *itemLayout = new QHBoxLayout(productItemWidget);
-            itemLayout->setContentsMargins(10, 10, 10, 10);
-            
-            // Infos du produit
-            QVBoxLayout *infoLayout = new QVBoxLayout();
-            QLabel *nameLabel = new QLabel(productName, productItemWidget);
-            nameLabel->setStyleSheet("font-weight: bold; color: #f1f5f9;");
-            infoLayout->addWidget(nameLabel);
-            
-            QLabel *priceLabel = new QLabel(QString("Prix: %1 Ar | Stock: %2").arg(QString::number(price, 'f', 2)).arg(stock), productItemWidget);
-            priceLabel->setStyleSheet("color: #cbd5e1; font-size: 12px;");
-            infoLayout->addWidget(priceLabel);
-            
-            itemLayout->addLayout(infoLayout, 1);
-            
-            // Spinbox pour la quantité
-            QSpinBox *quantitySpinBox = new QSpinBox(productItemWidget);
-            quantitySpinBox->setMinimum(0);
-            quantitySpinBox->setMaximum(stock);
-            quantitySpinBox->setValue(0);
-            quantitySpinBox->setStyleSheet(
-                "QSpinBox {"
-                "   background: #0f172a;"
-                "   color: #f1f5f9;"
-                "   border: 1px solid #334155;"
-                "   border-radius: 4px;"
-                "   padding: 4px;"
-                "}"
-            );
-            itemLayout->addWidget(quantitySpinBox);
-            
-            // Bouton Ajouter
-            QPushButton *addBtn = new QPushButton("Ajouter", productItemWidget);
-            addBtn->setFixedWidth(80);
-            addBtn->setStyleSheet(
-                "QPushButton {"
-                "   background-color: #10b981;"
-                "   color: white;"
-                "   border: none;"
-                "   border-radius: 4px;"
-                "   padding: 6px;"
-                "}"
-                "QPushButton:hover {"
-                "   background-color: #059669;"
-                "}"
-            );
-            
-            // Stocker le productId et quantitySpinBox pour accès ultérieur
-            addBtn->setProperty("productId", productId);
-            addBtn->setProperty("productName", productName);
-            addBtn->setProperty("price", price);
-            
-            connect(addBtn, &QPushButton::clicked, [this, productId, productName, price, quantitySpinBox]() {
-                int quantity = quantitySpinBox->value();
-                if (quantity > 0) {
-                    addProduct(productId, productName, price, quantity);
-                    quantitySpinBox->setValue(0);
-                } else {
-                    QMessageBox::warning(this, "Erreur", "Veuillez sélectionner une quantité supérieure à 0");
-                }
-            });
-            
-            itemLayout->addWidget(addBtn);
-            
-            productItemWidget->setStyleSheet(
-                "QWidget {"
-                "   background: #1a2332;"
-                "   border: 1px solid #334155;"
-                "   border-radius: 4px;"
-                "   margin-bottom: 5px;"
-                "}"
-            );
-            
-            productsLayout->addWidget(productItemWidget);
-        } while (query.next());
-    }
-    
-    productsLayout->addStretch();
-    scrollArea->setWidget(productsContainerWidget);
-    layout->addWidget(scrollArea, 1);
-    
-    layout->addStretch();
+    // Products section removed from client form - products are selected in the order flow
 
     // Boutons
     QHBoxLayout *buttonLayout = new QHBoxLayout();
@@ -908,7 +787,21 @@ int OrderDialog::saveClientAndOrder(double paidAmount)
         }
     }
 
-    // 5. Insérer le paiement avec le montant réellement payé
+    // 6. Insérer les mouvements de stock pour chaque produit vendu
+    for (const OrderItem &item : orderItems) {
+        QSqlQuery mq;
+        mq.prepare("INSERT INTO STOCK_MOVEMENTS (id_product, type, quantite, motif, id_user) VALUES (?, ?, ?, ?, ?)");
+        mq.addBindValue(item.productId);
+        mq.addBindValue(QString("SORTIE"));
+        mq.addBindValue(item.quantity);
+        mq.addBindValue(QString("Vente - Commande %1").arg(commandeId));
+        mq.addBindValue(currentUserId);
+        if (!mq.exec()) {
+            qDebug() << "Failed to insert stock movement for order:" << mq.lastError().text();
+        }
+    }
+
+    // 7. Insérer le paiement avec le montant réellement payé
     query.prepare("INSERT INTO PAIEMENTS (id_commande, montant, statut) "
                   "VALUES (?, ?, 'VALIDE')");
     query.addBindValue(commandeId);

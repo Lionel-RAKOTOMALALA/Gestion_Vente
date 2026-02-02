@@ -13,6 +13,7 @@
 #include "orderspage.h"
 #include "paymentspage.h"
 #include "cashpage.h"
+#include "stockmovementpage.h"
 
 MainWindow::MainWindow(const QString &userRole, int userId, QWidget *parent)
     : QMainWindow(parent)
@@ -41,6 +42,7 @@ MainWindow::MainWindow(const QString &userRole, int userId, QWidget *parent)
 
     // Ajouter le Dashboard en premier
     DashboardPage *dashboardPage = new DashboardPage(this);
+    dashboardPage->setUserRole(userRole, userId);  // Passer le rôle et l'ID utilisateur
     stackedWidget->addWidget(dashboardPage);
 
     // Ajouter les pages modulaires selon le rôle
@@ -62,6 +64,9 @@ MainWindow::MainWindow(const QString &userRole, int userId, QWidget *parent)
 
     PaymentsPage *paymentsPage = new PaymentsPage(this);
     stackedWidget->addWidget(paymentsPage);
+
+    StockMovementPage *stockMovementPage = new StockMovementPage(userRole, currentUserId, this);
+    stackedWidget->addWidget(stockMovementPage);
 
     if (userRole != "VENDEUR") {
         CashPage *cashPage = new CashPage(this);

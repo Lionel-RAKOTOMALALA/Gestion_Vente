@@ -92,9 +92,9 @@ Sidebar::Sidebar(const QString &userRole, QWidget *parent) : QWidget(parent)
     // Boutons de navigation avec emojis comme icônes
     QStringList pages;
     if (userRole != "VENDEUR") {
-        pages = {"📊  Dashboard", "👥  Utilisateurs", "🤝  Clients", "📦  Produits", "📋  Commandes", "💳  Paiements", "💰  Caisse"};
+        pages = {"📊  Dashboard", "👥  Utilisateurs", "🤝  Clients", "📦  Produits", "📋  Commandes", "💳  Paiements", "�  Stock", "💰  Caisse"};
     } else {
-        pages = {"📊  Dashboard", "🤝  Clients", "📦  Produits", "📋  Commandes", "💳  Paiements"};
+        pages = {"📊  Dashboard", "🤝  Clients", "📦  Produits", "📋  Commandes", "💳  Paiements", "📊  Stock"};
     }
     
     for (int i = 0; i < pages.size(); ++i) {

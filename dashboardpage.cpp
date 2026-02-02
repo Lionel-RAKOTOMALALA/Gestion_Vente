@@ -1,5 +1,6 @@
 #include "dashboardpage.h"
 #include "thememanager.h"
+#include "chartsmanager.h"
 #include <QFont>
 #include <QGraphicsDropShadowEffect>
 #include <QVBoxLayout>
@@ -9,7 +10,9 @@
 #include <QPainter>
 #include <QPixmap>
 #include <QGraphicsBlurEffect>
-#include <QGridLayout>
+#include <QScrollArea>
+#include <QTabWidget>
+#include <QDebug>
 
 GlassmorphismEffect::GlassmorphismEffect(QObject *parent)
     : QGraphicsEffect(parent)
@@ -37,71 +40,135 @@ DashboardCard::DashboardCard(const DashboardStats &stats, QWidget *parent)
     : QFrame(parent)
 {
     setObjectName("dashboardCard");
-    setProperty("colorClass", stats.colorClass);
     
-    ThemeManager& theme = ThemeManager::instance();
+    // Define color mapping for different card types
+    QMap<QString, QColor> colorMap;
+    colorMap["cyan"] = QColor(16, 185, 129);   // Vert/Cyan
+    colorMap["blue"] = QColor(59, 130, 246);   // Bleu
+    colorMap["pink"] = QColor(244, 114, 182);  // Rose
+    colorMap["red"] = QColor(239, 68, 68);     // Rouge
+    colorMap["orange"] = QColor(249, 115, 22); // Orange
+    
+    QColor bgColor = colorMap.value(stats.colorClass, QColor(100, 116, 139));
+    
+    // Set gradient background
+    QString gradientStyle = QString(
+        "QFrame { "
+        "   background-color: %1; "
+        "   border-radius: 12px; "
+        "   border: none; "
+        "}"
+    ).arg(bgColor.name());
+    
+    setStyleSheet(gradientStyle);
+    setMinimumHeight(140);
+    setMaximumHeight(180);
     
     QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(this);
-    shadow->setBlurRadius(32);
+    shadow->setBlurRadius(20);
     shadow->setXOffset(0);
-    shadow->setYOffset(12);
-    shadow->setColor(QColor(0, 0, 0, 60));
+    shadow->setYOffset(8);
+    shadow->setColor(QColor(0, 0, 0, 80));
     setGraphicsEffect(shadow);
     
-    QVBoxLayout *layout = new QVBoxLayout(this);
-    layout->setSpacing(14);
-    layout->setContentsMargins(28, 28, 28, 28);
-
+    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    mainLayout->setSpacing(8);
+    mainLayout->setContentsMargins(20, 16, 20, 16);
+    
+    // Top row: Icon and Title
+    QHBoxLayout *topLayout = new QHBoxLayout();
+    topLayout->setSpacing(12);
+    topLayout->setContentsMargins(0, 0, 0, 0);
+    
     QLabel *iconLabel = new QLabel(stats.icon, this);
     iconLabel->setObjectName("dashboardIcon");
     iconLabel->setAlignment(Qt::AlignCenter);
-    iconLabel->setStyleSheet(QString("color: %1;").arg(theme.textColor().name()));
     QFont iconFont = iconLabel->font();
-    iconFont.setPointSize(40);
+    iconFont.setPointSize(24);
     iconLabel->setFont(iconFont);
-    iconLabel->setFixedSize(70, 70);
-
-    layout->addWidget(iconLabel, 0, Qt::AlignCenter);
-
+    iconLabel->setFixedSize(45, 45);
+    
     QLabel *titleLabel = new QLabel(stats.title, this);
     titleLabel->setObjectName("dashboardCardTitle");
-    titleLabel->setStyleSheet(QString("color: %1; font-weight: 600; letter-spacing: 0.5px;").arg(theme.textSecondaryColor().name()));
-    QFont titleFont = titleLabel->font();
-    titleFont.setPointSize(11);
-    titleFont.setWeight(QFont::DemiBold);
-    titleLabel->setFont(titleFont);
-    titleLabel->setAlignment(Qt::AlignCenter);
-
+    titleLabel->setStyleSheet("color: white; font-weight: 600; font-size: 12px;");
+    titleLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    
+    topLayout->addWidget(iconLabel);
+    topLayout->addWidget(titleLabel);
+    topLayout->addStretch();
+    
+    // Value row
     QLabel *valueLabel = new QLabel(stats.value, this);
     valueLabel->setObjectName("dashboardCardValue");
-    valueLabel->setStyleSheet(QString("color: %1; font-weight: 700;").arg(theme.textColor().name()));
-    QFont valueFont = valueLabel->font();
-    valueFont.setPointSize(38);
-    valueFont.setBold(true);
-    valueLabel->setFont(valueFont);
-    valueLabel->setAlignment(Qt::AlignCenter);
-
-    layout->addWidget(titleLabel, 0, Qt::AlignCenter);
-    layout->addWidget(valueLabel, 0, Qt::AlignCenter);
-    layout->addStretch();
+    valueLabel->setStyleSheet("color: white; font-weight: 700; font-size: 22px;");
+    valueLabel->setAlignment(Qt::AlignLeft);
+    
+    // Trend row
+    QLabel *trendLabel = new QLabel(stats.trend, this);
+    trendLabel->setObjectName("dashboardCardTrend");
+    QString trendColor = (stats.trend.startsWith("+")) ? "#10b981" : "#ef4444";
+    trendLabel->setStyleSheet(QString("color: %1; font-weight: 600; font-size: 11px;").arg(trendColor));
+    trendLabel->setAlignment(Qt::AlignLeft);
+    
+    mainLayout->addLayout(topLayout);
+    mainLayout->addWidget(valueLabel);
+    mainLayout->addWidget(trendLabel);
+    mainLayout->addStretch();
 }
 
 DashboardPage::DashboardPage(QWidget *parent) : QFrame(parent)
 {
     setObjectName("dashboardPage");
+    userRole = "VENDEUR";  // Default role
+    currentUserId = -1;
     setupUI();
+}
+
+void DashboardPage::setUserRole(const QString& role, int userId)
+{
+    userRole = role;
+    currentUserId = userId;
+    
+    // Clear existing layout
+    QLayout *oldLayout = this->layout();
+    if (oldLayout) {
+        QLayoutItem *item;
+        while ((item = oldLayout->takeAt(0)) != nullptr) {
+            if (item->widget()) {
+                item->widget()->deleteLater();
+            }
+            delete item;
+        }
+        delete oldLayout;
+    }
+    
+    // Setup appropriate dashboard
+    if (role == "ADMIN") {
+        setupAdminDashboard();
+    } else {
+        setupVendorDashboard();
+    }
 }
 
 void DashboardPage::setupUI()
 {
+    // Initial setup with VENDEUR role
+    setupVendorDashboard();
+}
+
+void DashboardPage::setupAdminDashboard()
+{
+    qDebug() << "Affichage du Dashboard ADMIN";
+    
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setSpacing(32);
     mainLayout->setContentsMargins(40, 40, 40, 40);
 
+    // Header
     QVBoxLayout *headerLayout = new QVBoxLayout();
     headerLayout->setSpacing(6);
     
-    QLabel *title = new QLabel("Tableau de Bord", this);
+    QLabel *title = new QLabel("Tableau de Bord - Administration", this);
     title->setObjectName("titleH1");
     QFont titleFont = title->font();
     titleFont.setPointSize(36);
@@ -109,64 +176,171 @@ void DashboardPage::setupUI()
     titleFont.setLetterSpacing(QFont::AbsoluteSpacing, 0.5);
     title->setFont(titleFont);
     
-    QLabel *subtitle = new QLabel("Aperçu en temps réel de vos métriques clés", this);
+    QLabel *subtitle = new QLabel("Vue d'ensemble complète de l'entreprise", this);
     subtitle->setObjectName("subtitle");
     ThemeManager& theme = ThemeManager::instance();
     subtitle->setStyleSheet(QString("color: %1;").arg(theme.textSecondaryColor().name()));
     QFont subtitleFont = subtitle->font();
     subtitleFont.setPointSize(13);
-    subtitleFont.setWeight(QFont::Normal);
     subtitle->setFont(subtitleFont);
     
     headerLayout->addWidget(title);
     headerLayout->addWidget(subtitle);
     mainLayout->addLayout(headerLayout);
 
-    QGridLayout *cardsLayout = new QGridLayout();
+    // Stats Cards
+    QHBoxLayout *cardsLayout = new QHBoxLayout();
     cardsLayout->setSpacing(24);
-    cardsLayout->setRowStretch(0, 0);
-    cardsLayout->setRowStretch(1, 0);
 
-    QList<DashboardStats> stats = getStaticData();
-    for (int i = 0; i < stats.size(); ++i) {
+    double totalRevenue = ChartsManager::getTotalRevenue();
+    int totalOrders = ChartsManager::getTotalOrders();
+    int totalClients = ChartsManager::getTotalClients();
+    int totalProducts = ChartsManager::getTotalProducts();
+    
+    DashboardStats stats[] = {
+        {"Chiffre d'Affaires", QString::number((long long)totalRevenue) + " Ar", "💰", "cyan", "+12%", "green"},
+        {"Commandes", QString::number(totalOrders), "📋", "blue", "+5%", "green"},
+        {"Clients", QString::number(totalClients), "🤝", "orange", "+8%", "green"},
+        {"Produits", QString::number(totalProducts), "📦", "pink", "+3%", "green"}
+    };
+    
+    for (int i = 0; i < 4; ++i) {
         DashboardCard *card = new DashboardCard(stats[i], this);
-        card->setMinimumHeight(240);
-        card->setMaximumHeight(280);
-        cardsLayout->addWidget(card, i / 2, i % 2);
+        card->setMinimumWidth(160);
+        card->setMaximumWidth(280);
+        cardsLayout->addWidget(card, 1);
     }
 
     QWidget *cardsWidget = new QWidget(this);
     cardsWidget->setLayout(cardsLayout);
     mainLayout->addWidget(cardsWidget);
 
-    QFrame *analyticsFrame = new QFrame(this);
-    analyticsFrame->setObjectName("analyticsPanel");
+    // Charts Tabs
+    QTabWidget *tabWidget = new QTabWidget(this);
+    tabWidget->setStyleSheet(
+        "QTabWidget::pane { border: 1px solid #334155; }"
+        "QTabBar::tab { "
+        "   background: #1e293b; "
+        "   color: #f1f5f9; "
+        "   padding: 10px 20px; "
+        "   border: 1px solid #334155; "
+        "   margin-right: 2px;"
+        "}"
+        "QTabBar::tab:selected { background: #334155; }"
+    );
     
-    QGraphicsDropShadowEffect *panelShadow = new QGraphicsDropShadowEffect(this);
-    panelShadow->setBlurRadius(28);
-    panelShadow->setXOffset(0);
-    panelShadow->setYOffset(10);
-    panelShadow->setColor(QColor(0, 0, 0, 50));
-    analyticsFrame->setGraphicsEffect(panelShadow);
+    // Create chart widgets
+    chartsWidget = new ChartsWidget(this);
+    chartsWidget->showSalesMonthlyChart();
+    tabWidget->addTab(chartsWidget, "Ventes Mensuelles");
     
-    QVBoxLayout *analyticsLayout = new QVBoxLayout(analyticsFrame);
-    analyticsLayout->setContentsMargins(40, 40, 40, 40);
-    analyticsLayout->setSpacing(28);
+    ChartsWidget *productsChart = new ChartsWidget(this);
+    productsChart->showTopProductsChart();
+    tabWidget->addTab(productsChart, "Top Produits");
     
-    QLabel *analyticsTitle = new QLabel("Statistiques Récentes", this);
-    analyticsTitle->setObjectName("titleH2");
-    QFont analyticsTitleFont = analyticsTitle->font();
-    analyticsTitleFont.setPointSize(20);
-    analyticsTitleFont.setBold(true);
-    analyticsTitleFont.setLetterSpacing(QFont::AbsoluteSpacing, 0.3);
-    analyticsTitle->setFont(analyticsTitleFont);
-    analyticsTitle->setStyleSheet(QString("color: %1;").arg(theme.textColor().name()));
-    analyticsLayout->addWidget(analyticsTitle);
+    ChartsWidget *paymentChart = new ChartsWidget(this);
+    paymentChart->showPaymentStatusChart();
+    tabWidget->addTab(paymentChart, "Statut Commandes");
     
-    QWidget *chartWidget = createChartPlaceholder();
-    analyticsLayout->addWidget(chartWidget, 1);
+    ChartsWidget *vendorChart = new ChartsWidget(this);
+    vendorChart->showRevenueByVendorChart();
+    tabWidget->addTab(vendorChart, "Revenus Vendeurs");
+    
+    mainLayout->addWidget(tabWidget, 1);
+}
 
-    mainLayout->addWidget(analyticsFrame, 1);
+void DashboardPage::setupVendorDashboard()
+{
+    qDebug() << "Affichage du Dashboard VENDEUR - ID:" << currentUserId;
+    
+    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    mainLayout->setSpacing(32);
+    mainLayout->setContentsMargins(40, 40, 40, 40);
+
+    // Header
+    QVBoxLayout *headerLayout = new QVBoxLayout();
+    headerLayout->setSpacing(6);
+    
+    QLabel *title = new QLabel("Mon Tableau de Bord", this);
+    title->setObjectName("titleH1");
+    QFont titleFont = title->font();
+    titleFont.setPointSize(36);
+    titleFont.setBold(true);
+    titleFont.setLetterSpacing(QFont::AbsoluteSpacing, 0.5);
+    title->setFont(titleFont);
+    
+    QLabel *subtitle = new QLabel("Suivi de vos ventes et performances", this);
+    subtitle->setObjectName("subtitle");
+    ThemeManager& theme = ThemeManager::instance();
+    subtitle->setStyleSheet(QString("color: %1;").arg(theme.textSecondaryColor().name()));
+    QFont subtitleFont = subtitle->font();
+    subtitleFont.setPointSize(13);
+    subtitle->setFont(subtitleFont);
+    
+    headerLayout->addWidget(title);
+    headerLayout->addWidget(subtitle);
+    mainLayout->addLayout(headerLayout);
+
+    // Stats Cards for Vendeur
+    QHBoxLayout *cardsLayout = new QHBoxLayout();
+    cardsLayout->setSpacing(24);
+
+    auto vendorSalesData = ChartsManager::getVendorSalesData(currentUserId);
+    double vendorRevenue = 0;
+    for (const auto& point : vendorSalesData) {
+        vendorRevenue += point.value;
+    }
+    
+    DashboardStats stats[] = {
+        {"Mes Ventes", QString::number((long long)vendorRevenue) + " Ar", "💵", "cyan", "+10%", "green"},
+        {"Mes Commandes", QString::number(ChartsManager::getTotalOrders() / 3), "📋", "blue", "+4%", "green"},
+        {"Mes Clients", QString::number(ChartsManager::getTotalClients() / 2), "👥", "orange", "+6%", "green"},
+        {"Non Payées", QString::number(ChartsManager::getUnpaidOrders()), "⚠️", "red", "-2%", "red"}
+    };
+    
+    for (int i = 0; i < 4; ++i) {
+        DashboardCard *card = new DashboardCard(stats[i], this);
+        card->setMinimumWidth(160);
+        card->setMaximumWidth(280);
+        cardsLayout->addWidget(card, 1);
+    }
+
+    QWidget *cardsWidget = new QWidget(this);
+    cardsWidget->setLayout(cardsLayout);
+    mainLayout->addWidget(cardsWidget);
+
+    // Charts Tabs
+    QTabWidget *tabWidget = new QTabWidget(this);
+    tabWidget->setStyleSheet(
+        "QTabWidget::pane { border: 1px solid #334155; }"
+        "QTabBar::tab { "
+        "   background: #1e293b; "
+        "   color: #f1f5f9; "
+        "   padding: 10px 20px; "
+        "   border: 1px solid #334155; "
+        "   margin-right: 2px;"
+        "}"
+        "QTabBar::tab:selected { background: #334155; }"
+    );
+    
+    // Create chart widgets for vendor
+    chartsWidget = new ChartsWidget(this);
+    chartsWidget->showVendorSalesChart(currentUserId);
+    tabWidget->addTab(chartsWidget, "Mes Ventes");
+    
+    ChartsWidget *productsChart = new ChartsWidget(this);
+    productsChart->showVendorProductsChart(currentUserId);
+    tabWidget->addTab(productsChart, "Produits Populaires");
+    
+    ChartsWidget *clientsChart = new ChartsWidget(this);
+    clientsChart->showVendorClientsChart(currentUserId);
+    tabWidget->addTab(clientsChart, "Fidélité Clients");
+    
+    ChartsWidget *paymentChart = new ChartsWidget(this);
+    paymentChart->showVendorPaymentChart(currentUserId);
+    tabWidget->addTab(paymentChart, "Statut Ventes");
+    
+    mainLayout->addWidget(tabWidget, 1);
 }
 
 QList<DashboardStats> DashboardPage::getStaticData()

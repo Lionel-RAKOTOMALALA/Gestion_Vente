@@ -4,4 +4,7 @@
         <file>themes/light_theme.qss</file>
         <file>themes/dark_theme.qss</file>
     </qresource>
+    <qresource prefix="/images">
+        <file>bg_login_right.png</file>
+    </qresource>
 </RCC>

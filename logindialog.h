@@ -19,17 +19,20 @@ public:
 
 private slots:
     void onLoginClicked();
+    void onForgotPassword();
 
 private:
+    void setupUI();
+    bool authenticate(const QString &email, const QString &password);
+
     QLineEdit *emailEdit;
     QLineEdit *passwordEdit;
     QPushButton *loginButton;
+    QPushButton *forgotButton;
     QLabel *errorLabel;
 
     QString userRole;
     int userId;
-
-    bool authenticate(const QString &email, const QString &password);
 };
 
 #endif // LOGINDIALOG_H

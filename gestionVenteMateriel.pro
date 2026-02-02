@@ -10,6 +10,8 @@ CONFIG += c++17
 
 SOURCES += \
     cashpage.cpp \
+    chartsmanager.cpp \
+    chartswidget.cpp \
     clientdialog.cpp \
     clientspage.cpp \
     connexion.cpp \
@@ -27,6 +29,7 @@ SOURCES += \
     receiptgenerator.cpp \
     sidebar.cpp \
     smtpclient.cpp \
+    stockmovementpage.cpp \
     stylesheet.cpp \
     thememanager.cpp \
     userdialog.cpp \
@@ -34,6 +37,8 @@ SOURCES += \
 
 HEADERS += \
     cashpage.h \
+    chartsmanager.h \
+    chartswidget.h \
     clientdialog.h \
     clientspage.h \
     connexion.h \
@@ -51,6 +56,7 @@ HEADERS += \
     sidebar.h \
     smtpclient.h \
     smtpconfig.h \
+    stockmovementpage.h \
     stylesheet.h \
     thememanager.h \
     userdialog.h \
