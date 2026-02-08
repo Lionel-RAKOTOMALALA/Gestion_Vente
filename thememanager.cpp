@@ -15,7 +15,9 @@ ThemeManager::ThemeManager()
 {
     // Force le mode sombre uniquement
     m_currentTheme = DarkMode;
+    // Charger la préférence (par défaut : sombre) puis appliquer le thème
     loadThemePreference();
+    setTheme(m_currentTheme);
 }
 
 ThemeManager::Theme ThemeManager::currentTheme() const
@@ -379,6 +381,7 @@ void ThemeManager::saveThemePreference()
 void ThemeManager::loadThemePreference()
 {
     QSettings settings("GestionVente", "GestionVenteMateriel");
-    QString theme = settings.value("theme", "light").toString();
+    // Par défaut on choisit le mode sombre pour l'application
+    QString theme = settings.value("theme", "dark").toString();
     m_currentTheme = (theme == "dark") ? DarkMode : LightMode;
 }
