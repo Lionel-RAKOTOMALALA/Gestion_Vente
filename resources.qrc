@@ -7,4 +7,7 @@
     <qresource prefix="/images">
         <file>bg_login_right.png</file>
     </qresource>
+    <qresource prefix="/database">
+        <file>database/VenteMaterielInfo.db</file>
+    </qresource>
 </RCC>

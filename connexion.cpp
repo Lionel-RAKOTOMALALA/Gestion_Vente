@@ -5,20 +5,50 @@
 #include <QSqlQuery>
 #include <QCryptographicHash>
 #include <QDebug>
+#include <QStandardPaths>
+#include <QFile>
+#include <QDir>
 
 Connexion::Connexion() {}
 
 bool Connexion::createConnection()
 {
+    // Obtenir le répertoire pour stocker la base de données
+    QString appDataPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    QDir dir(appDataPath);
+    
+    // Créer le répertoire s'il n'existe pas
+    if (!dir.exists()) {
+        dir.mkpath(".");
+    }
+    
+    QString dbPath = appDataPath + "/VenteMaterielInfo.db";
+    
+    // Si la base de données n'existe pas, la copier depuis les ressources
+    if (!QFile::exists(dbPath)) {
+        QString resourcePath = ":/database/database/VenteMaterielInfo.db";
+        QFile resourceFile(resourcePath);
+        if (resourceFile.exists()) {
+            if (!QFile::copy(resourcePath, dbPath)) {
+                qDebug() << "Erreur lors de la copie de la base de données depuis les ressources:" << dbPath;
+                return false;
+            }
+            qDebug() << "Base de données copiée depuis les ressources vers:" << dbPath;
+        } else {
+            qDebug() << "Fichier de base de données introuvable dans les ressources:" << resourcePath;
+            return false;
+        }
+    }
+    
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("D:/VenteMaterielInfo.db");
+    db.setDatabaseName(dbPath);
 
     if (!db.open()) {
         qDebug() << "Erreur de connexion à la base de données:" << db.lastError().text();
         return false;
     }
 
-    qDebug() << "Connexion à la base de données réussie ôô";
+    qDebug() << "Connexion à la base de données réussie ôô (chemin:" << dbPath << ")";
 
     // Créer la table USERS si elle n'existe pas
     QSqlQuery query;
