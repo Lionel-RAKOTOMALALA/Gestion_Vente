@@ -26,6 +26,7 @@ SOURCES += \
     paymentspage.cpp \
     productdialog.cpp \
     productspage.cpp \
+    profilepanel.cpp \
     receiptgenerator.cpp \
     sidebar.cpp \
     smtpclient.cpp \
@@ -52,6 +53,7 @@ HEADERS += \
     paymentspage.h \
     productdialog.h \
     productspage.h \
+    profilepanel.h \
     receiptgenerator.h \
     sidebar.h \
     smtpclient.h \

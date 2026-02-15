@@ -5,6 +5,8 @@
 #include <QStackedWidget>
 #include "sidebar.h"
 #include "thememanager.h"
+#include <QLabel>
+#include <QToolButton>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -18,6 +20,7 @@ class OrdersPage;
 class PaymentsPage;
 class CashPage;
 class StockMovementPage;
+class ProfilePanel;
 
 class MainWindow : public QMainWindow
 {
@@ -32,6 +35,7 @@ private slots:
     void onPageChanged(int index);
     void onThemeToggled();
     void onThemeChanged(ThemeManager::Theme theme);
+    void onProfileRequested();
 
 private:
     void applyTheme();
@@ -40,11 +44,16 @@ private:
     Ui::MainWindow *ui;
     Sidebar *sidebar;
     QStackedWidget *stackedWidget;
+    QWidget *topBar;
+    QLabel *topTitleLabel;
+    QToolButton *profileButton;
     int currentUserId;
     int ordersPageIndex;
+    int profilePageIndex;
     ProductsPage *productsPage;
     OrdersPage *ordersPage;
     ClientsPage *clientsPage;
+    ProfilePanel *profilePanel;
 
 signals:
     void logoutRequested();

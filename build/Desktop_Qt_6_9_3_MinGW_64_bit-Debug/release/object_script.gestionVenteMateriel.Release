@@ -15,6 +15,7 @@ release/paymentdialog.o
 release/paymentspage.o
 release/productdialog.o
 release/productspage.o
+release/profilepanel.o
 release/receiptgenerator.o
 release/sidebar.o
 release/smtpclient.o
@@ -38,6 +39,7 @@ release/moc_paymentdialog.o
 release/moc_paymentspage.o
 release/moc_productdialog.o
 release/moc_productspage.o
+release/moc_profilepanel.o
 release/moc_sidebar.o
 release/moc_smtpclient.o
 release/moc_stockmovementpage.o

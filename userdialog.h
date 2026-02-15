@@ -6,6 +6,7 @@
 #include <QComboBox>
 #include <QCheckBox>
 #include <QPushButton>
+#include <QLabel>
 
 class UserDialog : public QDialog
 {
@@ -17,18 +18,23 @@ public:
 private slots:
     void onSave();
     void onCancel();
+    void onSelectPhoto();
 
 private:
     void setupUI();
     void loadUser(int userId);
     bool validateInput();
+    void displayPhotoPreview();
     
     int currentUserId;
+    QString photoPath;
     QLineEdit *txtNom;
     QLineEdit *txtEmail;
     QLineEdit *txtPassword;
     QComboBox *cboRole;
     QCheckBox *chkActif;
+    QLabel *lblPhotoPreview;
+    QPushButton *btnSelectPhoto;
     QPushButton *btnSave;
     QPushButton *btnCancel;
 };

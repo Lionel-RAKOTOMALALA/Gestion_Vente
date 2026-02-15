@@ -336,9 +336,9 @@ bool LoginDialog::authenticate(const QString &email, const QString &password)
     QByteArray hashedPassword = QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Sha256).toHex();
 
     QSqlQuery query;
-    query.prepare("SELECT id_user, role FROM USERS WHERE email = ? AND mot_de_passe = ? AND actif = 1");
-    query.addBindValue(email);
-    query.addBindValue(QString(hashedPassword));
+    query.prepare("SELECT id_user, role FROM USERS WHERE email = :email AND mot_de_passe = :password AND actif = 1");
+    query.bindValue(":email", email);
+    query.bindValue(":password", QString(hashedPassword));
 
     if (!query.exec()) {
         qDebug() << "Erreur lors de l'authentification:" << query.lastError().text();

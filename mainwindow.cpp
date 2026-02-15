@@ -2,7 +2,15 @@
 #include "ui_mainwindow.h"
 #include "thememanager.h"
 #include <QHBoxLayout>
+#include <QVBoxLayout>
 #include <QLabel>
+#include <QToolButton>
+#include <QPixmap>
+#include <QIcon>
+#include <QSize>
+#include <QFont>
+#include <QMenu>
+#include <QAction>
 #include <QDebug>
 #include <QApplication>
 #include <QPalette>
@@ -14,6 +22,7 @@
 #include "paymentspage.h"
 #include "cashpage.h"
 #include "stockmovementpage.h"
+#include "profilepanel.h"
 
 MainWindow::MainWindow(const QString &userRole, int userId, QWidget *parent)
     : QMainWindow(parent)
@@ -27,7 +36,7 @@ MainWindow::MainWindow(const QString &userRole, int userId, QWidget *parent)
     QWidget *central = new QWidget(this);
     setCentralWidget(central);
 
-    // Créer le layout principal
+    // Créer le layout principal (sidebar + zone droite)
     QHBoxLayout *mainLayout = new QHBoxLayout(central);
     mainLayout->setSpacing(0);
     mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -36,9 +45,61 @@ MainWindow::MainWindow(const QString &userRole, int userId, QWidget *parent)
     sidebar = new Sidebar(userRole, this);
     mainLayout->addWidget(sidebar);
 
+    // Zone droite : topbar + contenu (stackedWidget)
+    QWidget *rightContainer = new QWidget(this);
+    QVBoxLayout *rightLayout = new QVBoxLayout(rightContainer);
+    rightLayout->setSpacing(0);
+    rightLayout->setContentsMargins(16, 16, 16, 16);
+
+    // Top bar
+    topBar = new QWidget(this);
+    topBar->setObjectName("topBar");
+    QHBoxLayout *topLayout = new QHBoxLayout(topBar);
+    topLayout->setContentsMargins(8, 8, 8, 8);
+
+    topTitleLabel = new QLabel(tr("Gestion Vente"), this);
+    QFont titleFont = topTitleLabel->font();
+    titleFont.setPointSize(20);
+    titleFont.setBold(true);
+    topTitleLabel->setFont(titleFont);
+
+    // Spacer then profile button on the right
+    topLayout->addWidget(topTitleLabel);
+    topLayout->addStretch(1);
+
+    profileButton = new QToolButton(this);
+    profileButton->setObjectName("profileButton");
+    QPixmap avatarPixmap(":/images/avatar.svg");
+    profileButton->setIcon(QIcon(avatarPixmap));
+    profileButton->setIconSize(QSize(36,36));
+    profileButton->setAutoRaise(true);
+    profileButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
+    profileButton->setCursor(Qt::PointingHandCursor);
+    profileButton->setFixedSize(44,44);
+
+    // Menu du profil
+    QMenu *profileMenu = new QMenu(this);
+    QAction *viewProfile = new QAction(tr("Profil"), this);
+    QAction *logoutAction = new QAction(tr("Déconnexion"), this);
+    profileMenu->addAction(viewProfile);
+    profileMenu->addSeparator();
+    profileMenu->addAction(logoutAction);
+
+    connect(viewProfile, &QAction::triggered, this, &MainWindow::onProfileRequested);
+    connect(logoutAction, &QAction::triggered, this, &MainWindow::onLogoutRequested);
+
+    profileButton->setMenu(profileMenu);
+    profileButton->setPopupMode(QToolButton::InstantPopup);
+
+    topLayout->addWidget(profileButton);
+
+    rightLayout->addWidget(topBar, 0);
+
     // Créer le stacked widget pour les pages
     stackedWidget = new QStackedWidget(this);
-    mainLayout->addWidget(stackedWidget, 1);
+    rightLayout->addWidget(stackedWidget, 1);
+
+    mainLayout->addWidget(rightContainer, 1);
 
     // Ajouter le Dashboard en premier
     DashboardPage *dashboardPage = new DashboardPage(this);
@@ -73,6 +134,11 @@ MainWindow::MainWindow(const QString &userRole, int userId, QWidget *parent)
         stackedWidget->addWidget(cashPage);
     }
 
+    // Ajouter le panel de profil
+    profilePanel = new ProfilePanel(currentUserId, this);
+    profilePageIndex = stackedWidget->addWidget(profilePanel);
+    
+    // Connexions des signaux
     connect(sidebar, &Sidebar::pageChanged, stackedWidget, &QStackedWidget::setCurrentIndex);
     connect(sidebar, &Sidebar::logoutRequested, this, &MainWindow::onLogoutRequested);
     connect(stackedWidget, &QStackedWidget::currentChanged, this, &MainWindow::onPageChanged);
@@ -96,7 +162,14 @@ void MainWindow::onPageChanged(int index)
 {
     if (index == ordersPageIndex) {
         ordersPage->loadOrders();
+    } else if (index == profilePageIndex) {
+        profilePanel->loadUserData();
     }
+}
+
+void MainWindow::onProfileRequested()
+{
+    stackedWidget->setCurrentIndex(profilePageIndex);
 }
 
 void MainWindow::onThemeToggled()
@@ -124,6 +197,20 @@ void MainWindow::applyTheme()
         "}"
     ).arg(themeManager.backgroundColor().name(), 
           themeManager.textColor().name()));
+    // Style top bar elements if présents
+    if (topBar) {
+        topBar->setStyleSheet(QString("background: transparent; color: %1;").arg(themeManager.textColor().name()));
+    }
+    if (profileButton) {
+        QString btnStyle = QString(
+            "QToolButton#profileButton {"
+            "  border-radius: 22px;"
+            "  background: %1;"
+            "  border: 2px solid %2;"
+            "}"
+        ).arg(themeManager.primaryColor().name(), themeManager.borderColor().name());
+        profileButton->setStyleSheet(btnStyle);
+    }
     
     update();
     qApp->processEvents();

@@ -30,7 +30,8 @@ void UsersPage::setupDatabase()
                "mot_de_passe TEXT NOT NULL, "
                "role TEXT CHECK(role IN ('ADMIN','VENDEUR','CAISSIER')) NOT NULL, "
                "actif INTEGER DEFAULT 1, "
-               "date_creation DATETIME DEFAULT CURRENT_TIMESTAMP)");
+               "date_creation DATETIME DEFAULT CURRENT_TIMESTAMP, "
+               "photo_profile TEXT)");
 }
 
 void UsersPage::setupUI()

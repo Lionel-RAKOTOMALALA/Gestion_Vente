@@ -1,11 +1,14 @@
 #include "userdialog.h"
 #include <QVBoxLayout>
 #include <QFormLayout>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QMessageBox>
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QCryptographicHash>
+#include <QFileDialog>
+#include <QPixmap>
 
 UserDialog::UserDialog(QWidget *parent, int userId)
     : QDialog(parent), currentUserId(userId)
@@ -108,6 +111,48 @@ void UserDialog::setupUI()
 
     mainLayout->addLayout(formLayout);
 
+    // Section photo de profil
+    QLabel *photoLabel = new QLabel("Photo de profil", this);
+    photoLabel->setStyleSheet("font-size: 16px; font-weight: bold; color: #f1f5f9; margin-top: 20px;");
+    mainLayout->addWidget(photoLabel);
+
+    QHBoxLayout *photoLayout = new QHBoxLayout();
+    photoLayout->setSpacing(20);
+
+    lblPhotoPreview = new QLabel(this);
+    lblPhotoPreview->setFixedSize(150, 150);
+    lblPhotoPreview->setStyleSheet("border: 2px dashed #334155; border-radius: 8px; background: #1e293b;");
+    lblPhotoPreview->setAlignment(Qt::AlignCenter);
+    lblPhotoPreview->setText("📷");
+    lblPhotoPreview->setStyleSheet("border: 2px dashed #334155; border-radius: 8px; background: #1e293b; font-size: 48px;");
+
+    btnSelectPhoto = new QPushButton("📁 Sélectionner une photo", this);
+    btnSelectPhoto->setMinimumHeight(45);
+    btnSelectPhoto->setStyleSheet(
+        "QPushButton {"
+        "   background: #3b82f6;"
+        "   color: white;"
+        "   border: none;"
+        "   border-radius: 6px;"
+        "   padding: 10px 20px;"
+        "   font-size: 14px;"
+        "   font-weight: bold;"
+        "}"
+        "QPushButton:hover {"
+        "   background: #2563eb;"
+        "}"
+        "QPushButton:pressed {"
+        "   background: #1d4ed8;"
+        "}"
+    );
+    connect(btnSelectPhoto, &QPushButton::clicked, this, &UserDialog::onSelectPhoto);
+
+    photoLayout->addWidget(lblPhotoPreview);
+    photoLayout->addWidget(btnSelectPhoto);
+    photoLayout->addStretch();
+
+    mainLayout->addLayout(photoLayout);
+
     // Boutons
     QHBoxLayout *buttonLayout = new QHBoxLayout();
     buttonLayout->setSpacing(15);
@@ -167,7 +212,7 @@ void UserDialog::setupUI()
 void UserDialog::loadUser(int userId)
 {
     QSqlQuery query;
-    query.prepare("SELECT nom, email, role, actif FROM USERS WHERE id_user = :id");
+    query.prepare("SELECT nom, email, role, actif, photo_profile FROM USERS WHERE id_user = :id");
     query.bindValue(":id", userId);
     
     if (query.exec() && query.next()) {
@@ -175,6 +220,8 @@ void UserDialog::loadUser(int userId)
         txtEmail->setText(query.value(1).toString());
         cboRole->setCurrentText(query.value(2).toString());
         chkActif->setChecked(query.value(3).toBool());
+        photoPath = query.value(4).toString();
+        displayPhotoPreview();
     }
 }
 
@@ -234,21 +281,22 @@ void UserDialog::onSave()
 
     if (currentUserId == -1) {
         // Insertion
-        query.prepare("INSERT INTO USERS (nom, email, mot_de_passe, role, actif) "
-                     "VALUES (:nom, :email, :password, :role, :actif)");
+        query.prepare("INSERT INTO USERS (nom, email, mot_de_passe, role, actif, photo_profile) "
+                     "VALUES (:nom, :email, :password, :role, :actif, :photo)");
         query.bindValue(":nom", txtNom->text().trimmed());
         query.bindValue(":email", txtEmail->text().trimmed());
         query.bindValue(":password", hashedPassword);
         query.bindValue(":role", cboRole->currentText());
         query.bindValue(":actif", chkActif->isChecked() ? 1 : 0);
+        query.bindValue(":photo", photoPath);
     } else {
         // Mise à jour
         if (hashedPassword.isEmpty()) {
-            query.prepare("UPDATE USERS SET nom = :nom, email = :email, role = :role, actif = :actif "
+            query.prepare("UPDATE USERS SET nom = :nom, email = :email, role = :role, actif = :actif, photo_profile = :photo "
                          "WHERE id_user = :id");
         } else {
             query.prepare("UPDATE USERS SET nom = :nom, email = :email, mot_de_passe = :password, "
-                         "role = :role, actif = :actif WHERE id_user = :id");
+                         "role = :role, actif = :actif, photo_profile = :photo WHERE id_user = :id");
             query.bindValue(":password", hashedPassword);
         }
         query.bindValue(":id", currentUserId);
@@ -256,6 +304,7 @@ void UserDialog::onSave()
         query.bindValue(":email", txtEmail->text().trimmed());
         query.bindValue(":role", cboRole->currentText());
         query.bindValue(":actif", chkActif->isChecked() ? 1 : 0);
+        query.bindValue(":photo", photoPath);
     }
 
     if (query.exec()) {
@@ -271,4 +320,38 @@ void UserDialog::onSave()
 void UserDialog::onCancel()
 {
     reject();
+}
+
+void UserDialog::onSelectPhoto()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+        "Sélectionner une photo", "",
+        "Images (*.png *.jpg *.jpeg *.bmp);;Tous les fichiers (*)");
+    
+    if (!fileName.isEmpty()) {
+        photoPath = fileName;
+        displayPhotoPreview();
+    }
+}
+
+void UserDialog::displayPhotoPreview()
+{
+    if (photoPath.isEmpty()) {
+        lblPhotoPreview->clear();
+        lblPhotoPreview->setText("📷");
+        lblPhotoPreview->setStyleSheet("border: 2px dashed #334155; border-radius: 8px; background: #1e293b; font-size: 48px;");
+    } else {
+        QPixmap pixmap(photoPath);
+        if (!pixmap.isNull()) {
+            QPixmap scaledPixmap = pixmap.scaledToWidth(146, Qt::SmoothTransformation);
+            lblPhotoPreview->setPixmap(scaledPixmap);
+            lblPhotoPreview->setStyleSheet("border: 2px solid #667eea; border-radius: 8px; background: #1e293b;");
+        } else {
+            QMessageBox::warning(this, "Erreur", "Impossible de charger l'image.");
+            photoPath = "";
+            lblPhotoPreview->clear();
+            lblPhotoPreview->setText("📷");
+            lblPhotoPreview->setStyleSheet("border: 2px dashed #334155; border-radius: 8px; background: #1e293b; font-size: 48px;");
+        }
+    }
 }
