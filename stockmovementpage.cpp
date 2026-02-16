@@ -25,6 +25,7 @@ StockMovementPage::StockMovementPage(const QString &userRole, int userId, QWidge
     setupDatabase();
     setupUI();
     applyStyles();
+    loadStatistics();
     loadStockMovements();
 }
 
@@ -126,7 +127,68 @@ void StockMovementPage::setupUI()
     headerLayout->addWidget(subtitle);
     mainLayout->addLayout(headerLayout);
 
-    // Search and Filter Bar
+    // Statistics Cards
+    QHBoxLayout *statsLayout = new QHBoxLayout();
+    statsLayout->setSpacing(20);
+
+    // Card 1: Total Produits
+    QFrame *card1 = new QFrame(this);
+    card1->setObjectName("statCard");
+    card1->setStyleSheet(QString(
+        "QFrame#statCard {"
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #10b981, stop:1 #059669);"
+        "   border-radius: 14px;"
+        "   padding: 24px;"
+        "}"
+    ));
+    QVBoxLayout *card1Layout = new QVBoxLayout(card1);
+    QLabel *label1 = new QLabel("Nombre de Produits", this);
+    label1->setStyleSheet("color: rgba(255,255,255,0.8); font-size: 13px;");
+    totalProductsLabel = new QLabel("0", this);
+    totalProductsLabel->setStyleSheet("color: white; font-size: 28px; font-weight: bold;");
+    card1Layout->addWidget(label1);
+    card1Layout->addWidget(totalProductsLabel);
+    statsLayout->addWidget(card1);
+
+    // Card 2: Mouvements du jour
+    QFrame *card2 = new QFrame(this);
+    card2->setObjectName("statCard");
+    card2->setStyleSheet(QString(
+        "QFrame#statCard {"
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #3b82f6, stop:1 #1d4ed8);"
+        "   border-radius: 14px;"
+        "   padding: 24px;"
+        "}"
+    ));
+    QVBoxLayout *card2Layout = new QVBoxLayout(card2);
+    QLabel *label2 = new QLabel("Mouvements Aujourd'hui", this);
+    label2->setStyleSheet("color: rgba(255,255,255,0.8); font-size: 13px;");
+    movementsCountLabel = new QLabel("0", this);
+    movementsCountLabel->setStyleSheet("color: white; font-size: 28px; font-weight: bold;");
+    card2Layout->addWidget(label2);
+    card2Layout->addWidget(movementsCountLabel);
+    statsLayout->addWidget(card2);
+
+    // Card 3: Produits en rupture
+    QFrame *card3 = new QFrame(this);
+    card3->setObjectName("statCard");
+    card3->setStyleSheet(QString(
+        "QFrame#statCard {"
+        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #ef4444, stop:1 #dc2626);"
+        "   border-radius: 14px;"
+        "   padding: 24px;"
+        "}"
+    ));
+    QVBoxLayout *card3Layout = new QVBoxLayout(card3);
+    QLabel *label3 = new QLabel("Produits en Rupture", this);
+    label3->setStyleSheet("color: rgba(255,255,255,0.8); font-size: 13px;");
+    lowStockLabel = new QLabel("0", this);
+    lowStockLabel->setStyleSheet("color: white; font-size: 28px; font-weight: bold;");
+    card3Layout->addWidget(label3);
+    card3Layout->addWidget(lowStockLabel);
+    statsLayout->addWidget(card3);
+
+    mainLayout->addLayout(statsLayout);
     QHBoxLayout *filterLayout = new QHBoxLayout();
     filterLayout->setSpacing(16);
     
@@ -614,4 +676,40 @@ void StockMovementPage::onExportPDF()
     painter.end();
 
     QMessageBox::information(this, "Succès", QString("PDF exporté avec succès:\n%1").arg(fileName));
+}
+
+void StockMovementPage::loadStatistics()
+{
+    QSqlQuery query;
+    
+    // Total products
+    query.prepare("SELECT COUNT(*) FROM PRODUITS");
+    int totalProducts = 0;
+    if (query.exec()) {
+        if (query.next()) {
+            totalProducts = query.value(0).toInt();
+        }
+    }
+    totalProductsLabel->setText(QString::number(totalProducts));
+    
+    // Movements today
+    query.prepare("SELECT COUNT(*) FROM STOCK_MOVEMENTS WHERE DATE(date_mouvement) = DATE(?)");
+    query.addBindValue(QDateTime::currentDateTime());
+    int movementsToday = 0;
+    if (query.exec()) {
+        if (query.next()) {
+            movementsToday = query.value(0).toInt();
+        }
+    }
+    movementsCountLabel->setText(QString::number(movementsToday));
+    
+    // Low stock products (stock <= 5)
+    query.prepare("SELECT COUNT(*) FROM PRODUITS WHERE stock <= 5");
+    int lowStockCount = 0;
+    if (query.exec()) {
+        if (query.next()) {
+            lowStockCount = query.value(0).toInt();
+        }
+    }
+    lowStockLabel->setText(QString::number(lowStockCount));
 }

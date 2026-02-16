@@ -9,6 +9,7 @@
 #include <QHBoxLayout>
 #include <QComboBox>
 #include <QDateEdit>
+#include <QLabel>
 
 class StockMovementPage : public QFrame
 {
@@ -31,6 +32,7 @@ private:
     void setupUI();
     void setupDatabase();
     void applyStyles();
+    void loadStatistics();
     void populateMovementsTable(const QString &filterType = "", const QDate &startDate = QDate(), const QDate &endDate = QDate());
     void updateProductStock(int productId, int quantity, const QString &type);
 
@@ -41,6 +43,11 @@ private:
     QDateEdit *startDateEdit;
     QDateEdit *endDateEdit;
     QTableWidget *movementsTable;
+    
+    // Statistics labels
+    QLabel *totalProductsLabel;
+    QLabel *movementsCountLabel;
+    QLabel *lowStockLabel;
     
     QString userRole;
     int userId;

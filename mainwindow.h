@@ -18,7 +18,6 @@ class ClientsPage;
 class ProductsPage;
 class OrdersPage;
 class PaymentsPage;
-class CashPage;
 class StockMovementPage;
 class ProfilePanel;
 

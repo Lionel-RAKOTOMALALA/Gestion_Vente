@@ -42,6 +42,7 @@ QChartView* ChartsWidget::createChartView()
     QChartView* chartView = new QChartView(this);
     chartView->setRenderHint(QPainter::Antialiasing);
     chartView->setBackgroundBrush(QBrush(QColor(15, 23, 42)));
+    chartView->setMinimumHeight(550);
     
     return chartView;
 }
@@ -91,7 +92,8 @@ void ChartsWidget::showSalesMonthlyChart()
     if (layout) delete layout;
     
     QVBoxLayout *newLayout = new QVBoxLayout(this);
-    newLayout->setContentsMargins(0, 0, 0, 0);
+    newLayout->setContentsMargins(16, 16, 16, 16);
+    newLayout->setSpacing(12);
     newLayout->addWidget(chartView);
     this->setLayout(newLayout);
 }
@@ -125,7 +127,8 @@ void ChartsWidget::showTopProductsChart()
     if (layout) delete layout;
     
     QVBoxLayout *newLayout = new QVBoxLayout(this);
-    newLayout->setContentsMargins(0, 0, 0, 0);
+    newLayout->setContentsMargins(16, 16, 16, 16);
+    newLayout->setSpacing(12);
     newLayout->addWidget(chartView);
     this->setLayout(newLayout);
 }
@@ -159,7 +162,8 @@ void ChartsWidget::showPaymentStatusChart()
     if (layout) delete layout;
     
     QVBoxLayout *newLayout = new QVBoxLayout(this);
-    newLayout->setContentsMargins(0, 0, 0, 0);
+    newLayout->setContentsMargins(16, 16, 16, 16);
+    newLayout->setSpacing(12);
     newLayout->addWidget(chartView);
     this->setLayout(newLayout);
 }
@@ -193,7 +197,8 @@ void ChartsWidget::showRevenueByVendorChart()
     if (layout) delete layout;
     
     QVBoxLayout *newLayout = new QVBoxLayout(this);
-    newLayout->setContentsMargins(0, 0, 0, 0);
+    newLayout->setContentsMargins(16, 16, 16, 16);
+    newLayout->setSpacing(12);
     newLayout->addWidget(chartView);
     this->setLayout(newLayout);
 }
@@ -238,7 +243,8 @@ void ChartsWidget::showOrdersDistributionChart()
     if (layout) delete layout;
     
     QVBoxLayout *newLayout = new QVBoxLayout(this);
-    newLayout->setContentsMargins(0, 0, 0, 0);
+    newLayout->setContentsMargins(16, 16, 16, 16);
+    newLayout->setSpacing(12);
     newLayout->addWidget(chartView);
     this->setLayout(newLayout);
 }
@@ -285,7 +291,8 @@ void ChartsWidget::showVendorSalesChart(int vendorId)
     if (layout) delete layout;
     
     QVBoxLayout *newLayout = new QVBoxLayout(this);
-    newLayout->setContentsMargins(0, 0, 0, 0);
+    newLayout->setContentsMargins(16, 16, 16, 16);
+    newLayout->setSpacing(12);
     newLayout->addWidget(chartView);
     this->setLayout(newLayout);
 }
@@ -319,7 +326,8 @@ void ChartsWidget::showVendorProductsChart(int vendorId)
     if (layout) delete layout;
     
     QVBoxLayout *newLayout = new QVBoxLayout(this);
-    newLayout->setContentsMargins(0, 0, 0, 0);
+    newLayout->setContentsMargins(16, 16, 16, 16);
+    newLayout->setSpacing(12);
     newLayout->addWidget(chartView);
     this->setLayout(newLayout);
 }
@@ -353,7 +361,8 @@ void ChartsWidget::showVendorClientsChart(int vendorId)
     if (layout) delete layout;
     
     QVBoxLayout *newLayout = new QVBoxLayout(this);
-    newLayout->setContentsMargins(0, 0, 0, 0);
+    newLayout->setContentsMargins(16, 16, 16, 16);
+    newLayout->setSpacing(12);
     newLayout->addWidget(chartView);
     this->setLayout(newLayout);
 }
@@ -387,7 +396,8 @@ void ChartsWidget::showVendorPaymentChart(int vendorId)
     if (layout) delete layout;
     
     QVBoxLayout *newLayout = new QVBoxLayout(this);
-    newLayout->setContentsMargins(0, 0, 0, 0);
+    newLayout->setContentsMargins(16, 16, 16, 16);
+    newLayout->setSpacing(12);
     newLayout->addWidget(chartView);
     this->setLayout(newLayout);
 }

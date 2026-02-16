@@ -160,7 +160,14 @@ void DashboardPage::setupAdminDashboard()
 {
     qDebug() << "Affichage du Dashboard ADMIN";
     
-    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    // Create scroll area
+    QScrollArea *scrollArea = new QScrollArea(this);
+    scrollArea->setWidgetResizable(true);
+    scrollArea->setStyleSheet("QScrollArea { border: none; background: transparent; }");
+    
+    // Create container widget for scroll area
+    QWidget *container = new QWidget(this);
+    QVBoxLayout *mainLayout = new QVBoxLayout(container);
     mainLayout->setSpacing(32);
     mainLayout->setContentsMargins(40, 40, 40, 40);
 
@@ -217,6 +224,7 @@ void DashboardPage::setupAdminDashboard()
 
     // Charts Tabs
     QTabWidget *tabWidget = new QTabWidget(this);
+    tabWidget->setMinimumHeight(650);
     tabWidget->setStyleSheet(
         "QTabWidget::pane { border: 1px solid #334155; }"
         "QTabBar::tab { "
@@ -231,29 +239,49 @@ void DashboardPage::setupAdminDashboard()
     
     // Create chart widgets
     chartsWidget = new ChartsWidget(this);
+    chartsWidget->setMinimumHeight(600);
     chartsWidget->showSalesMonthlyChart();
     tabWidget->addTab(chartsWidget, "Ventes Mensuelles");
     
     ChartsWidget *productsChart = new ChartsWidget(this);
+    productsChart->setMinimumHeight(600);
     productsChart->showTopProductsChart();
     tabWidget->addTab(productsChart, "Top Produits");
     
     ChartsWidget *paymentChart = new ChartsWidget(this);
+    paymentChart->setMinimumHeight(600);
     paymentChart->showPaymentStatusChart();
     tabWidget->addTab(paymentChart, "Statut Commandes");
     
     ChartsWidget *vendorChart = new ChartsWidget(this);
+    vendorChart->setMinimumHeight(600);
     vendorChart->showRevenueByVendorChart();
     tabWidget->addTab(vendorChart, "Revenus Vendeurs");
     
     mainLayout->addWidget(tabWidget, 1);
+    
+    // Set container in scroll area and add to frame
+    scrollArea->setWidget(container);
+    
+    QVBoxLayout *frameLayout = new QVBoxLayout(this);
+    frameLayout->setContentsMargins(0, 0, 0, 0);
+    frameLayout->setSpacing(0);
+    frameLayout->addWidget(scrollArea);
+    this->setLayout(frameLayout);
 }
 
 void DashboardPage::setupVendorDashboard()
 {
     qDebug() << "Affichage du Dashboard VENDEUR - ID:" << currentUserId;
     
-    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    // Create scroll area
+    QScrollArea *scrollArea = new QScrollArea(this);
+    scrollArea->setWidgetResizable(true);
+    scrollArea->setStyleSheet("QScrollArea { border: none; background: transparent; }");
+    
+    // Create container widget for scroll area
+    QWidget *container = new QWidget(this);
+    QVBoxLayout *mainLayout = new QVBoxLayout(container);
     mainLayout->setSpacing(32);
     mainLayout->setContentsMargins(40, 40, 40, 40);
 
@@ -311,6 +339,7 @@ void DashboardPage::setupVendorDashboard()
 
     // Charts Tabs
     QTabWidget *tabWidget = new QTabWidget(this);
+    tabWidget->setMinimumHeight(650);
     tabWidget->setStyleSheet(
         "QTabWidget::pane { border: 1px solid #334155; }"
         "QTabBar::tab { "
@@ -325,22 +354,35 @@ void DashboardPage::setupVendorDashboard()
     
     // Create chart widgets for vendor
     chartsWidget = new ChartsWidget(this);
+    chartsWidget->setMinimumHeight(600);
     chartsWidget->showVendorSalesChart(currentUserId);
     tabWidget->addTab(chartsWidget, "Mes Ventes");
     
     ChartsWidget *productsChart = new ChartsWidget(this);
+    productsChart->setMinimumHeight(600);
     productsChart->showVendorProductsChart(currentUserId);
     tabWidget->addTab(productsChart, "Produits Populaires");
     
     ChartsWidget *clientsChart = new ChartsWidget(this);
+    clientsChart->setMinimumHeight(600);
     clientsChart->showVendorClientsChart(currentUserId);
     tabWidget->addTab(clientsChart, "Fidélité Clients");
     
     ChartsWidget *paymentChart = new ChartsWidget(this);
+    paymentChart->setMinimumHeight(600);
     paymentChart->showVendorPaymentChart(currentUserId);
     tabWidget->addTab(paymentChart, "Statut Ventes");
     
     mainLayout->addWidget(tabWidget, 1);
+    
+    // Set container in scroll area and add to frame
+    scrollArea->setWidget(container);
+    
+    QVBoxLayout *frameLayout = new QVBoxLayout(this);
+    frameLayout->setContentsMargins(0, 0, 0, 0);
+    frameLayout->setSpacing(0);
+    frameLayout->addWidget(scrollArea);
+    this->setLayout(frameLayout);
 }
 
 QList<DashboardStats> DashboardPage::getStaticData()

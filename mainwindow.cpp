@@ -14,13 +14,17 @@
 #include <QDebug>
 #include <QApplication>
 #include <QPalette>
+#include <QSqlQuery>
+#include <QSqlDatabase>
+#include <QFile>
+#include <QPainter>
+#include <QPainterPath>
 #include "dashboardpage.h"
 #include "userspage.h"
 #include "clientspage.h"
 #include "productspage.h"
 #include "orderspage.h"
 #include "paymentspage.h"
-#include "cashpage.h"
 #include "stockmovementpage.h"
 #include "profilepanel.h"
 
@@ -69,13 +73,55 @@ MainWindow::MainWindow(const QString &userRole, int userId, QWidget *parent)
 
     profileButton = new QToolButton(this);
     profileButton->setObjectName("profileButton");
-    QPixmap avatarPixmap(":/images/avatar.svg");
-    profileButton->setIcon(QIcon(avatarPixmap));
-    profileButton->setIconSize(QSize(36,36));
     profileButton->setAutoRaise(true);
     profileButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
     profileButton->setCursor(Qt::PointingHandCursor);
-    profileButton->setFixedSize(44,44);
+    profileButton->setFixedSize(44, 44);
+    
+    // Charger la photo de profil depuis la BD
+    QSqlQuery query;
+    query.prepare("SELECT photo_profile FROM USERS WHERE id_user = ?");
+    query.addBindValue(userId);
+    
+    QPixmap avatarPixmap;
+    if (query.exec() && query.next()) {
+        QString photoPath = query.value(0).toString();
+        if (!photoPath.isEmpty() && QFile::exists(photoPath)) {
+            avatarPixmap.load(photoPath);
+        }
+    }
+    
+    // Si pas de photo, utiliser l'avatar par défaut
+    if (avatarPixmap.isNull()) {
+        avatarPixmap.load(":/images/avatar.svg");
+    }
+    
+    // Créer une image circulaire avec bordure
+    QPixmap roundedPixmap(44, 44);
+    roundedPixmap.fill(Qt::transparent);
+    
+    QPainter painter(&roundedPixmap);
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform);
+    
+    // Créer le chemin circulaire
+    QPainterPath path;
+    path.addEllipse(1, 1, 42, 42);
+    painter.setClipPath(path);
+    
+    // Redimensionner et dessiner l'image
+    QPixmap scaledPixmap = avatarPixmap.scaledToWidth(42, Qt::SmoothTransformation);
+    int offset = (scaledPixmap.height() - 42) / 2;
+    painter.drawPixmap(1, 1 - offset, scaledPixmap);
+    
+    // Dessiner la bordure
+    painter.setClipping(false);
+    painter.setPen(QPen(QColor(59, 130, 246), 2));
+    painter.drawEllipse(1, 1, 42, 42);
+    painter.end();
+    
+    profileButton->setIcon(QIcon(roundedPixmap));
+    profileButton->setIconSize(QSize(44, 44));
 
     // Menu du profil
     QMenu *profileMenu = new QMenu(this);
@@ -128,11 +174,6 @@ MainWindow::MainWindow(const QString &userRole, int userId, QWidget *parent)
 
     StockMovementPage *stockMovementPage = new StockMovementPage(userRole, currentUserId, this);
     stackedWidget->addWidget(stockMovementPage);
-
-    if (userRole != "VENDEUR") {
-        CashPage *cashPage = new CashPage(this);
-        stackedWidget->addWidget(cashPage);
-    }
 
     // Ajouter le panel de profil
     profilePanel = new ProfilePanel(currentUserId, this);
