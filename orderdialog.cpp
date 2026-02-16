@@ -1,4 +1,6 @@
 #include "orderdialog.h"
+#include "stockmovementpage.h"
+#include "dashboardpage.h"
 #include "paymentdialog.h"
 #include "receiptgenerator.h"
 #include <QVBoxLayout>
@@ -16,8 +18,8 @@
 #include <QSpinBox>
 #include <QScrollArea>
 
-OrderDialog::OrderDialog(int userId, QWidget *parent) :
-    QDialog(parent), totalAmount(0.0), currentUserId(userId)
+OrderDialog::OrderDialog(int userId, QWidget *parent, StockMovementPage *stockPage, DashboardPage *dashPage) :
+    QDialog(parent), totalAmount(0.0), currentUserId(userId), stockMovementPage(stockPage), dashboardPage(dashPage)
 {
     setWindowTitle("Nouvelle commande");
     setModal(true);
@@ -40,8 +42,8 @@ OrderDialog::~OrderDialog()
 {
 }
 
-OrderDialog::OrderDialog(int userId, const QString &commandeId, QWidget *parent) :
-    QDialog(parent), totalAmount(0.0), currentUserId(userId), isEditMode(true), editCommandeId(commandeId)
+OrderDialog::OrderDialog(int userId, const QString &commandeId, QWidget *parent, StockMovementPage *stockPage, DashboardPage *dashPage) :
+    QDialog(parent), totalAmount(0.0), currentUserId(userId), isEditMode(true), editCommandeId(commandeId), stockMovementPage(stockPage), dashboardPage(dashPage)
 {
     setWindowTitle("Modifier commande");
     setModal(true);
@@ -799,6 +801,16 @@ int OrderDialog::saveClientAndOrder(double paidAmount)
         if (!mq.exec()) {
             qDebug() << "Failed to insert stock movement for order:" << mq.lastError().text();
         }
+    }
+    
+    // Mettre à jour les statistiques du mouvement de stock
+    if (stockMovementPage) {
+        stockMovementPage->refreshStatistics();
+    }
+    
+    // Mettre à jour le tableau de bord
+    if (dashboardPage) {
+        dashboardPage->onDataChanged();
     }
 
     // 7. Insérer le paiement avec le montant réellement payé

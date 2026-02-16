@@ -50,6 +50,10 @@ class DashboardPage : public QFrame
 public:
     explicit DashboardPage(QWidget *parent = nullptr);
     void setUserRole(const QString& role, int userId = -1);
+    void refreshDashboard();
+
+public slots:
+    void onDataChanged();
 
 private:
     void setupUI();

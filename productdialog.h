@@ -7,12 +7,15 @@
 #include <QPushButton>
 #include <QLabel>
 
+class StockMovementPage;
+class DashboardPage;
+
 class ProductDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit ProductDialog(QWidget *parent = nullptr, int productId = -1, int userId = -1);
+    explicit ProductDialog(QWidget *parent = nullptr, int productId = -1, int userId = -1, StockMovementPage *stockPage = nullptr, DashboardPage *dashPage = nullptr);
 
 private slots:
     void onSave();
@@ -39,6 +42,8 @@ private:
 
     QString selectedImagePath;
     int currentUserId;
+    StockMovementPage *stockMovementPage;
+    DashboardPage *dashboardPage;
 };
 
 #endif // PRODUCTDIALOG_H

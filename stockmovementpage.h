@@ -18,6 +18,7 @@ class StockMovementPage : public QFrame
 public:
     explicit StockMovementPage(const QString &userRole, int userId, QWidget *parent = nullptr);
     void loadStockMovements();
+    void refreshStatistics();
 
 private slots:
     // manual add removed: movements are automatic

@@ -1,5 +1,7 @@
 #include "productspage.h"
 #include "productdialog.h"
+#include "stockmovementpage.h"
+#include "dashboardpage.h"
 #include "thememanager.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -15,7 +17,7 @@
 #include <QFrame>
 #include <QGraphicsEffect>
 
-ProductsPage::ProductsPage(const QString &userRole, int userId, QWidget *parent) : QFrame(parent), userRole(userRole), userId(userId)
+ProductsPage::ProductsPage(const QString &userRole, int userId, QWidget *parent, StockMovementPage *stockPage, DashboardPage *dashPage) : QFrame(parent), userRole(userRole), userId(userId), stockMovementPage(stockPage), dashboardPage(dashPage)
 {
     setObjectName("productsPage");
     setupDatabase();
@@ -24,7 +26,7 @@ ProductsPage::ProductsPage(const QString &userRole, int userId, QWidget *parent)
     loadProducts();
     
     if (userRole == "VENDEUR") {
-        orderDialog = new OrderDialog(userId, this);
+        orderDialog = new OrderDialog(userId, this, stockMovementPage, dashboardPage);
         connect(orderDialog, &OrderDialog::orderSaved, [this]() { emit orderValidated(); });
     } else {
         orderDialog = nullptr;
@@ -656,17 +658,23 @@ void ProductsPage::loadProducts()
 
 void ProductsPage::onAddProduct()
 {
-    ProductDialog dialog(this, -1, userId);
+    ProductDialog dialog(this, -1, userId, stockMovementPage, dashboardPage);
     if (dialog.exec() == QDialog::Accepted) {
         loadProducts();
+        if (dashboardPage) {
+            dashboardPage->onDataChanged();
+        }
     }
 }
 
 void ProductsPage::onEditProduct(int productId)
 {
-    ProductDialog dialog(this, productId, userId);
+    ProductDialog dialog(this, productId, userId, stockMovementPage, dashboardPage);
     if (dialog.exec() == QDialog::Accepted) {
         loadProducts();
+        if (dashboardPage) {
+            dashboardPage->onDataChanged();
+        }
     }
 }
 
@@ -694,6 +702,9 @@ void ProductsPage::onDeleteProduct(int productId)
         if (query.exec()) {
             QMessageBox::information(this, "Succès", "Produit supprimé avec succès.");
             loadProducts();
+            if (dashboardPage) {
+                dashboardPage->onDataChanged();
+            }
         } else {
             QMessageBox::critical(this, "Erreur", "Erreur lors de la suppression: " + query.lastError().text());
         }

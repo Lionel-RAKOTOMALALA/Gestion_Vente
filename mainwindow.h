@@ -35,10 +35,12 @@ private slots:
     void onThemeToggled();
     void onThemeChanged(ThemeManager::Theme theme);
     void onProfileRequested();
+    void onProfileUpdated(int userId);
 
 private:
     void applyTheme();
     void applyThemeToAllPages();
+    void updateProfilePhoto(int userId);
 
     Ui::MainWindow *ui;
     Sidebar *sidebar;
@@ -49,10 +51,12 @@ private:
     int currentUserId;
     int ordersPageIndex;
     int profilePageIndex;
+    DashboardPage *dashboardPage;
     ProductsPage *productsPage;
     OrdersPage *ordersPage;
     ClientsPage *clientsPage;
     ProfilePanel *profilePanel;
+    StockMovementPage *stockMovementPage;
 
 signals:
     void logoutRequested();

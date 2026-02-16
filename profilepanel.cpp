@@ -616,6 +616,7 @@ void ProfilePanel::onSaveProfile()
     if (query.exec()) {
         QMessageBox::information(this, "Succès", "Profil mis à jour avec succès!");
         loadUserData();
+        emit profileUpdated(currentUserId);
         onCancelEdit();
     } else {
         QMessageBox::critical(this, "Erreur", 

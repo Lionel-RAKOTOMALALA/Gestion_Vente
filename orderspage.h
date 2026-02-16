@@ -10,12 +10,15 @@
 #include <QComboBox>
 #include <QLabel>
 
+class StockMovementPage;
+class DashboardPage;
+
 class OrdersPage : public QFrame
 {
     Q_OBJECT
 
 public:
-    explicit OrdersPage(const QString &userRole, int userId, QWidget *parent = nullptr);
+    explicit OrdersPage(const QString &userRole, int userId, QWidget *parent = nullptr, StockMovementPage *stockPage = nullptr, DashboardPage *dashPage = nullptr);
     void loadOrders();
 
 private slots:
@@ -64,6 +67,9 @@ private:
     int itemsPerPage;
     int totalItems;
     int totalPages;
+    
+    StockMovementPage *stockMovementPage;
+    DashboardPage *dashboardPage;
 };
 
 #endif // ORDERSPAGE_H

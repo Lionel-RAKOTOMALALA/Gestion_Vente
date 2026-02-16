@@ -143,9 +143,9 @@ void StockMovementPage::setupUI()
     ));
     QVBoxLayout *card1Layout = new QVBoxLayout(card1);
     QLabel *label1 = new QLabel("Nombre de Produits", this);
-    label1->setStyleSheet("color: rgba(255,255,255,0.8); font-size: 13px;");
+    label1->setStyleSheet("color: rgba(255,255,255,0.8); font-size: 13px; background-color: transparent;");
     totalProductsLabel = new QLabel("0", this);
-    totalProductsLabel->setStyleSheet("color: white; font-size: 28px; font-weight: bold;");
+    totalProductsLabel->setStyleSheet("color: white; font-size: 28px; font-weight: bold; background-color: transparent;");
     card1Layout->addWidget(label1);
     card1Layout->addWidget(totalProductsLabel);
     statsLayout->addWidget(card1);
@@ -162,9 +162,9 @@ void StockMovementPage::setupUI()
     ));
     QVBoxLayout *card2Layout = new QVBoxLayout(card2);
     QLabel *label2 = new QLabel("Mouvements Aujourd'hui", this);
-    label2->setStyleSheet("color: rgba(255,255,255,0.8); font-size: 13px;");
+    label2->setStyleSheet("color: rgba(255,255,255,0.8); font-size: 13px; background-color: transparent;");
     movementsCountLabel = new QLabel("0", this);
-    movementsCountLabel->setStyleSheet("color: white; font-size: 28px; font-weight: bold;");
+    movementsCountLabel->setStyleSheet("color: white; font-size: 28px; font-weight: bold; background-color: transparent;");
     card2Layout->addWidget(label2);
     card2Layout->addWidget(movementsCountLabel);
     statsLayout->addWidget(card2);
@@ -181,9 +181,9 @@ void StockMovementPage::setupUI()
     ));
     QVBoxLayout *card3Layout = new QVBoxLayout(card3);
     QLabel *label3 = new QLabel("Produits en Rupture", this);
-    label3->setStyleSheet("color: rgba(255,255,255,0.8); font-size: 13px;");
+    label3->setStyleSheet("color: rgba(255,255,255,0.8); font-size: 13px; background-color: transparent;");
     lowStockLabel = new QLabel("0", this);
-    lowStockLabel->setStyleSheet("color: white; font-size: 28px; font-weight: bold;");
+    lowStockLabel->setStyleSheet("color: white; font-size: 28px; font-weight: bold; background-color: transparent;");
     card3Layout->addWidget(label3);
     card3Layout->addWidget(lowStockLabel);
     statsLayout->addWidget(card3);
@@ -712,4 +712,9 @@ void StockMovementPage::loadStatistics()
         }
     }
     lowStockLabel->setText(QString::number(lowStockCount));
+}
+
+void StockMovementPage::refreshStatistics()
+{
+    loadStatistics();
 }

@@ -23,13 +23,16 @@ struct OrderItem {
     double total;
 };
 
+class StockMovementPage;
+class DashboardPage;
+
 class OrderDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit OrderDialog(int userId, QWidget *parent = nullptr);
-    explicit OrderDialog(int userId, const QString &commandeId, QWidget *parent = nullptr);
+    explicit OrderDialog(int userId, QWidget *parent = nullptr, StockMovementPage *stockPage = nullptr, DashboardPage *dashPage = nullptr);
+    explicit OrderDialog(int userId, const QString &commandeId, QWidget *parent = nullptr, StockMovementPage *stockPage = nullptr, DashboardPage *dashPage = nullptr);
     ~OrderDialog();
 
     void addProduct(int productId, const QString &productName, double unitPrice, int quantity = 1);
@@ -105,6 +108,9 @@ private:
     QString clientTelephone;
     QString clientEmail;
     QString clientAdresse;
+    
+    StockMovementPage *stockMovementPage;
+    DashboardPage *dashboardPage;
 };
 
 #endif // ORDERDIALOG_H

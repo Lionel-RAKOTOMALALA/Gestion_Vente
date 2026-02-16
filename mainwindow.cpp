@@ -78,50 +78,8 @@ MainWindow::MainWindow(const QString &userRole, int userId, QWidget *parent)
     profileButton->setCursor(Qt::PointingHandCursor);
     profileButton->setFixedSize(44, 44);
     
-    // Charger la photo de profil depuis la BD
-    QSqlQuery query;
-    query.prepare("SELECT photo_profile FROM USERS WHERE id_user = ?");
-    query.addBindValue(userId);
-    
-    QPixmap avatarPixmap;
-    if (query.exec() && query.next()) {
-        QString photoPath = query.value(0).toString();
-        if (!photoPath.isEmpty() && QFile::exists(photoPath)) {
-            avatarPixmap.load(photoPath);
-        }
-    }
-    
-    // Si pas de photo, utiliser l'avatar par défaut
-    if (avatarPixmap.isNull()) {
-        avatarPixmap.load(":/images/avatar.svg");
-    }
-    
-    // Créer une image circulaire avec bordure
-    QPixmap roundedPixmap(44, 44);
-    roundedPixmap.fill(Qt::transparent);
-    
-    QPainter painter(&roundedPixmap);
-    painter.setRenderHint(QPainter::Antialiasing);
-    painter.setRenderHint(QPainter::SmoothPixmapTransform);
-    
-    // Créer le chemin circulaire
-    QPainterPath path;
-    path.addEllipse(1, 1, 42, 42);
-    painter.setClipPath(path);
-    
-    // Redimensionner et dessiner l'image
-    QPixmap scaledPixmap = avatarPixmap.scaledToWidth(42, Qt::SmoothTransformation);
-    int offset = (scaledPixmap.height() - 42) / 2;
-    painter.drawPixmap(1, 1 - offset, scaledPixmap);
-    
-    // Dessiner la bordure
-    painter.setClipping(false);
-    painter.setPen(QPen(QColor(59, 130, 246), 2));
-    painter.drawEllipse(1, 1, 42, 42);
-    painter.end();
-    
-    profileButton->setIcon(QIcon(roundedPixmap));
-    profileButton->setIconSize(QSize(44, 44));
+    // Charger et afficher la photo de profil
+    updateProfilePhoto(userId);
 
     // Menu du profil
     QMenu *profileMenu = new QMenu(this);
@@ -148,7 +106,7 @@ MainWindow::MainWindow(const QString &userRole, int userId, QWidget *parent)
     mainLayout->addWidget(rightContainer, 1);
 
     // Ajouter le Dashboard en premier
-    DashboardPage *dashboardPage = new DashboardPage(this);
+    dashboardPage = new DashboardPage(this);
     dashboardPage->setUserRole(userRole, userId);  // Passer le rôle et l'ID utilisateur
     stackedWidget->addWidget(dashboardPage);
 
@@ -162,17 +120,19 @@ MainWindow::MainWindow(const QString &userRole, int userId, QWidget *parent)
     this->clientsPage = clientsPage;
     stackedWidget->addWidget(clientsPage);
 
-    productsPage = new ProductsPage(userRole, currentUserId, this);
+    // Créer StockMovementPage d'abord pour que ProductsPage et OrdersPage puissent la référencer
+    stockMovementPage = new StockMovementPage(userRole, currentUserId, this);
+    
+    productsPage = new ProductsPage(userRole, currentUserId, this, stockMovementPage, dashboardPage);
     stackedWidget->addWidget(productsPage);
 
-    ordersPage = new OrdersPage(userRole, currentUserId, this);
+    ordersPage = new OrdersPage(userRole, currentUserId, this, stockMovementPage, dashboardPage);
     stackedWidget->addWidget(ordersPage);
     ordersPageIndex = stackedWidget->indexOf(ordersPage);
 
     PaymentsPage *paymentsPage = new PaymentsPage(this);
     stackedWidget->addWidget(paymentsPage);
 
-    StockMovementPage *stockMovementPage = new StockMovementPage(userRole, currentUserId, this);
     stackedWidget->addWidget(stockMovementPage);
 
     // Ajouter le panel de profil
@@ -185,6 +145,7 @@ MainWindow::MainWindow(const QString &userRole, int userId, QWidget *parent)
     connect(stackedWidget, &QStackedWidget::currentChanged, this, &MainWindow::onPageChanged);
     connect(productsPage, &ProductsPage::orderValidated, ordersPage, &OrdersPage::loadOrders);
     connect(productsPage, &ProductsPage::orderValidated, productsPage, &ProductsPage::loadProducts);
+    connect(profilePanel, &ProfilePanel::profileUpdated, this, &MainWindow::onProfileUpdated);
 
     ThemeManager& themeManager = ThemeManager::instance();
     connect(&themeManager, &ThemeManager::themeChanged, this, &MainWindow::onThemeChanged);
@@ -274,6 +235,60 @@ void MainWindow::applyThemeToAllPages()
     if (ordersPage) {
         ordersPage->loadOrders();
     }
+}
+
+void MainWindow::updateProfilePhoto(int userId)
+{
+    // Charger la photo de profil depuis la BD
+    QSqlQuery query;
+    query.prepare("SELECT photo_profile FROM USERS WHERE id_user = ?");
+    query.addBindValue(userId);
+    
+    QPixmap avatarPixmap;
+    if (query.exec() && query.next()) {
+        QString photoPath = query.value(0).toString();
+        if (!photoPath.isEmpty() && QFile::exists(photoPath)) {
+            avatarPixmap.load(photoPath);
+        }
+    }
+    
+    // Si pas de photo, utiliser l'avatar par défaut
+    if (avatarPixmap.isNull()) {
+        avatarPixmap.load(":/images/avatar.svg");
+    }
+    
+    // Créer une image circulaire avec bordure
+    QPixmap roundedPixmap(44, 44);
+    roundedPixmap.fill(Qt::transparent);
+    
+    QPainter painter(&roundedPixmap);
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform);
+    
+    // Créer le chemin circulaire
+    QPainterPath path;
+    path.addEllipse(1, 1, 42, 42);
+    painter.setClipPath(path);
+    
+    // Redimensionner et dessiner l'image
+    QPixmap scaledPixmap = avatarPixmap.scaledToWidth(42, Qt::SmoothTransformation);
+    int offset = (scaledPixmap.height() - 42) / 2;
+    painter.drawPixmap(1, 1 - offset, scaledPixmap);
+    
+    // Dessiner la bordure
+    painter.setClipping(false);
+    painter.setPen(QPen(QColor(59, 130, 246), 2));
+    painter.drawEllipse(1, 1, 42, 42);
+    painter.end();
+    
+    profileButton->setIcon(QIcon(roundedPixmap));
+    profileButton->setIconSize(QSize(44, 44));
+}
+
+void MainWindow::onProfileUpdated(int userId)
+{
+    // Mettre à jour la photo de profil dans la top bar
+    updateProfilePhoto(userId);
 }
 
 MainWindow::~MainWindow()

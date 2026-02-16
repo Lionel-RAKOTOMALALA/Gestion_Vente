@@ -53,7 +53,9 @@ void ChartsWidget::showSalesMonthlyChart()
     
     QChart *chart = new QChart();
     chart->setTitle("Ventes Mensuelles (12 derniers mois)");
-    chart->setTitleFont(QFont("Segoe UI", 16, QFont::Bold));
+    QFont titleFont("Segoe UI", 18, QFont::Bold);
+    chart->setTitleFont(titleFont);
+    chart->setTitleBrush(QBrush(QColor(241, 245, 249)));
     chart->setBackgroundBrush(QBrush(QColor(15, 23, 42)));
     
     QBarSet *set = new QBarSet("Ventes");
@@ -73,17 +75,20 @@ void ChartsWidget::showSalesMonthlyChart()
     
     QBarCategoryAxis *axisX = new QBarCategoryAxis();
     axisX->append(categories);
-    axisX->setLabelsColor(QColor(148, 163, 184));
+    axisX->setLabelsColor(QColor(241, 245, 249));
+    axisX->setLabelsFont(QFont("Segoe UI", 11));
     chart->addAxis(axisX, Qt::AlignBottom);
     series->attachAxis(axisX);
     
     QValueAxis *axisY = new QValueAxis();
-    axisY->setLabelsColor(QColor(148, 163, 184));
+    axisY->setLabelsColor(QColor(241, 245, 249));
+    axisY->setLabelsFont(QFont("Segoe UI", 11));
     chart->addAxis(axisY, Qt::AlignLeft);
     series->attachAxis(axisY);
     
     chart->legend()->setVisible(true);
     chart->legend()->setAlignment(Qt::AlignBottom);
+    chart->legend()->setLabelColor(QColor(241, 245, 249));
     
     chartView->setChart(chart);
     
@@ -104,7 +109,9 @@ void ChartsWidget::showTopProductsChart()
     
     QChart *chart = new QChart();
     chart->setTitle("Top 10 Produits Vendus");
-    chart->setTitleFont(QFont("Segoe UI", 16, QFont::Bold));
+    QFont titleFont2("Segoe UI", 18, QFont::Bold);
+    chart->setTitleFont(titleFont2);
+    chart->setTitleBrush(QBrush(QColor(241, 245, 249)));
     chart->setBackgroundBrush(QBrush(QColor(15, 23, 42)));
     
     QPieSeries *series = new QPieSeries();
@@ -114,12 +121,14 @@ void ChartsWidget::showTopProductsChart()
         QPieSlice *slice = series->append(point.label, point.value);
         slice->setColor(point.color);
         slice->setLabelVisible(true);
+        slice->setLabelColor(QColor(241, 245, 249));
         slice->setLabel(QString("%1 (%2)").arg(point.label).arg((int)point.value));
     }
     
     chart->addSeries(series);
     chart->legend()->setVisible(true);
     chart->legend()->setAlignment(Qt::AlignRight);
+    chart->legend()->setLabelColor(QColor(241, 245, 249));
     
     chartView->setChart(chart);
     
@@ -139,7 +148,9 @@ void ChartsWidget::showPaymentStatusChart()
     
     QChart *chart = new QChart();
     chart->setTitle("Statut des Commandes");
-    chart->setTitleFont(QFont("Segoe UI", 16, QFont::Bold));
+    QFont titleFont3("Segoe UI", 18, QFont::Bold);
+    chart->setTitleFont(titleFont3);
+    chart->setTitleBrush(QBrush(QColor(241, 245, 249)));
     chart->setBackgroundBrush(QBrush(QColor(15, 23, 42)));
     
     QPieSeries *series = new QPieSeries();
@@ -149,12 +160,14 @@ void ChartsWidget::showPaymentStatusChart()
         QPieSlice *slice = series->append(point.label, point.value);
         slice->setColor(point.color);
         slice->setLabelVisible(true);
+        slice->setLabelColor(QColor(241, 245, 249));
         slice->setLabel(QString("%1: %2").arg(point.label).arg((int)point.value));
     }
     
     chart->addSeries(series);
     chart->legend()->setVisible(true);
     chart->legend()->setAlignment(Qt::AlignRight);
+    chart->legend()->setLabelColor(QColor(241, 245, 249));
     
     chartView->setChart(chart);
     
@@ -174,7 +187,9 @@ void ChartsWidget::showRevenueByVendorChart()
     
     QChart *chart = new QChart();
     chart->setTitle("Revenus par Vendeur");
-    chart->setTitleFont(QFont("Segoe UI", 16, QFont::Bold));
+    QFont titleFont4("Segoe UI", 18, QFont::Bold);
+    chart->setTitleFont(titleFont4);
+    chart->setTitleBrush(QBrush(QColor(241, 245, 249)));
     chart->setBackgroundBrush(QBrush(QColor(15, 23, 42)));
     
     QPieSeries *series = new QPieSeries();
@@ -184,12 +199,14 @@ void ChartsWidget::showRevenueByVendorChart()
         QPieSlice *slice = series->append(point.label, point.value);
         slice->setColor(point.color);
         slice->setLabelVisible(true);
+        slice->setLabelColor(QColor(241, 245, 249));
         slice->setLabel(QString("%1\n%2 Ar").arg(point.label).arg((long long)point.value));
     }
     
     chart->addSeries(series);
     chart->legend()->setVisible(true);
     chart->legend()->setAlignment(Qt::AlignRight);
+    chart->legend()->setLabelColor(QColor(241, 245, 249));
     
     chartView->setChart(chart);
     
@@ -209,7 +226,9 @@ void ChartsWidget::showOrdersDistributionChart()
     
     QChart *chart = new QChart();
     chart->setTitle("Distribution des Commandes");
-    chart->setTitleFont(QFont("Segoe UI", 16, QFont::Bold));
+    QFont titleFont5("Segoe UI", 18, QFont::Bold);
+    chart->setTitleFont(titleFont5);
+    chart->setTitleBrush(QBrush(QColor(241, 245, 249)));
     chart->setBackgroundBrush(QBrush(QColor(15, 23, 42)));
     
     QBarSet *set = new QBarSet("Nombre de commandes");
@@ -228,12 +247,14 @@ void ChartsWidget::showOrdersDistributionChart()
     
     QBarCategoryAxis *axisX = new QBarCategoryAxis();
     axisX->append(categories);
-    axisX->setLabelsColor(QColor(148, 163, 184));
+    axisX->setLabelsColor(QColor(241, 245, 249));
+    axisX->setLabelsFont(QFont("Segoe UI", 11));
     chart->addAxis(axisX, Qt::AlignBottom);
     series->attachAxis(axisX);
     
     QValueAxis *axisY = new QValueAxis();
-    axisY->setLabelsColor(QColor(148, 163, 184));
+    axisY->setLabelsColor(QColor(241, 245, 249));
+    axisY->setLabelsFont(QFont("Segoe UI", 11));
     chart->addAxis(axisY, Qt::AlignLeft);
     series->attachAxis(axisY);
     
@@ -257,7 +278,9 @@ void ChartsWidget::showVendorSalesChart(int vendorId)
     
     QChart *chart = new QChart();
     chart->setTitle("Mes Ventes (6 derniers mois)");
-    chart->setTitleFont(QFont("Segoe UI", 16, QFont::Bold));
+    QFont titleFont6("Segoe UI", 18, QFont::Bold);
+    chart->setTitleFont(titleFont6);
+    chart->setTitleBrush(QBrush(QColor(241, 245, 249)));
     chart->setBackgroundBrush(QBrush(QColor(15, 23, 42)));
     
     QBarSet *set = new QBarSet("Ventes");
@@ -276,12 +299,14 @@ void ChartsWidget::showVendorSalesChart(int vendorId)
     
     QBarCategoryAxis *axisX = new QBarCategoryAxis();
     axisX->append(categories);
-    axisX->setLabelsColor(QColor(148, 163, 184));
+    axisX->setLabelsColor(QColor(241, 245, 249));
+    axisX->setLabelsFont(QFont("Segoe UI", 11));
     chart->addAxis(axisX, Qt::AlignBottom);
     series->attachAxis(axisX);
     
     QValueAxis *axisY = new QValueAxis();
-    axisY->setLabelsColor(QColor(148, 163, 184));
+    axisY->setLabelsColor(QColor(241, 245, 249));
+    axisY->setLabelsFont(QFont("Segoe UI", 11));
     chart->addAxis(axisY, Qt::AlignLeft);
     series->attachAxis(axisY);
     
@@ -303,7 +328,9 @@ void ChartsWidget::showVendorProductsChart(int vendorId)
     
     QChart *chart = new QChart();
     chart->setTitle("Mes Produits Populaires");
-    chart->setTitleFont(QFont("Segoe UI", 16, QFont::Bold));
+    QFont titleFont7("Segoe UI", 18, QFont::Bold);
+    chart->setTitleFont(titleFont7);
+    chart->setTitleBrush(QBrush(QColor(241, 245, 249)));
     chart->setBackgroundBrush(QBrush(QColor(15, 23, 42)));
     
     QPieSeries *series = new QPieSeries();
@@ -313,12 +340,14 @@ void ChartsWidget::showVendorProductsChart(int vendorId)
         QPieSlice *slice = series->append(point.label, point.value);
         slice->setColor(point.color);
         slice->setLabelVisible(true);
+        slice->setLabelColor(QColor(241, 245, 249));
         slice->setLabel(QString("%1 (%2)").arg(point.label).arg((int)point.value));
     }
     
     chart->addSeries(series);
     chart->legend()->setVisible(true);
     chart->legend()->setAlignment(Qt::AlignRight);
+    chart->legend()->setLabelColor(QColor(241, 245, 249));
     
     chartView->setChart(chart);
     
@@ -338,7 +367,9 @@ void ChartsWidget::showVendorClientsChart(int vendorId)
     
     QChart *chart = new QChart();
     chart->setTitle("Fidélité de mes Clients");
-    chart->setTitleFont(QFont("Segoe UI", 16, QFont::Bold));
+    QFont titleFont8("Segoe UI", 18, QFont::Bold);
+    chart->setTitleFont(titleFont8);
+    chart->setTitleBrush(QBrush(QColor(241, 245, 249)));
     chart->setBackgroundBrush(QBrush(QColor(15, 23, 42)));
     
     QPieSeries *series = new QPieSeries();
@@ -348,12 +379,14 @@ void ChartsWidget::showVendorClientsChart(int vendorId)
         QPieSlice *slice = series->append(point.label, point.value);
         slice->setColor(point.color);
         slice->setLabelVisible(true);
+        slice->setLabelColor(QColor(241, 245, 249));
         slice->setLabel(QString("%1: %2").arg(point.label).arg((int)point.value));
     }
     
     chart->addSeries(series);
     chart->legend()->setVisible(true);
     chart->legend()->setAlignment(Qt::AlignRight);
+    chart->legend()->setLabelColor(QColor(241, 245, 249));
     
     chartView->setChart(chart);
     
@@ -373,7 +406,9 @@ void ChartsWidget::showVendorPaymentChart(int vendorId)
     
     QChart *chart = new QChart();
     chart->setTitle("Statut de mes Ventes");
-    chart->setTitleFont(QFont("Segoe UI", 16, QFont::Bold));
+    QFont titleFont9("Segoe UI", 18, QFont::Bold);
+    chart->setTitleFont(titleFont9);
+    chart->setTitleBrush(QBrush(QColor(241, 245, 249)));
     chart->setBackgroundBrush(QBrush(QColor(15, 23, 42)));
     
     QPieSeries *series = new QPieSeries();
@@ -383,12 +418,14 @@ void ChartsWidget::showVendorPaymentChart(int vendorId)
         QPieSlice *slice = series->append(point.label, point.value);
         slice->setColor(point.color);
         slice->setLabelVisible(true);
+        slice->setLabelColor(QColor(241, 245, 249));
         slice->setLabel(QString("%1\n%2 Ar").arg(point.label).arg((long long)point.value));
     }
     
     chart->addSeries(series);
     chart->legend()->setVisible(true);
     chart->legend()->setAlignment(Qt::AlignRight);
+    chart->legend()->setLabelColor(QColor(241, 245, 249));
     
     chartView->setChart(chart);
     

@@ -1,4 +1,6 @@
 #include "productdialog.h"
+#include "stockmovementpage.h"
+#include "dashboardpage.h"
 #include <QVBoxLayout>
 #include <QFormLayout>
 #include <QHBoxLayout>
@@ -13,8 +15,8 @@
 #include <QDoubleValidator>
 #include <QIntValidator>
 
-ProductDialog::ProductDialog(QWidget *parent, int productId, int userId)
-    : QDialog(parent), currentProductId(productId), selectedImagePath(""), currentUserId(userId)
+ProductDialog::ProductDialog(QWidget *parent, int productId, int userId, StockMovementPage *stockPage, DashboardPage *dashPage)
+    : QDialog(parent), currentProductId(productId), selectedImagePath(""), currentUserId(userId), stockMovementPage(stockPage), dashboardPage(dashPage)
 {
     setupUI();
     if (productId != -1) {
@@ -369,6 +371,15 @@ void ProductDialog::onSave()
                 
                 if (!mq.exec()) {
                     qDebug() << "Erreur lors de la création du mouvement initial:" << mq.lastError().text();
+                } else {
+                    // Mettre à jour les statistiques
+                    if (stockMovementPage) {
+                        stockMovementPage->refreshStatistics();
+                    }
+                    // Mettre à jour le tableau de bord
+                    if (dashboardPage) {
+                        dashboardPage->onDataChanged();
+                    }
                 }
             }
         }

@@ -10,12 +10,15 @@
 #include <QGridLayout>
 #include "orderdialog.h"
 
+class StockMovementPage;
+class DashboardPage;
+
 class ProductsPage : public QFrame
 {
     Q_OBJECT
 
 public:
-    explicit ProductsPage(const QString &userRole, int userId, QWidget *parent = nullptr);
+    explicit ProductsPage(const QString &userRole, int userId, QWidget *parent = nullptr, StockMovementPage *stockPage = nullptr, DashboardPage *dashPage = nullptr);
     void loadProducts();
 
 private slots:
@@ -46,6 +49,8 @@ private:
     QString userRole;
     int userId;
     OrderDialog *orderDialog;
+    StockMovementPage *stockMovementPage;
+    DashboardPage *dashboardPage;
 };
 
 #endif // PRODUCTSPAGE_H

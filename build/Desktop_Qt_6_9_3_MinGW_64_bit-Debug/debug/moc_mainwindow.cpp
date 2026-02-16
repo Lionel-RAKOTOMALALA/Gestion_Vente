@@ -49,7 +49,9 @@ template <> constexpr inline auto MainWindow::qt_create_metaobjectdata<qt_meta_t
         "onThemeChanged",
         "ThemeManager::Theme",
         "theme",
-        "onProfileRequested"
+        "onProfileRequested",
+        "onProfileUpdated",
+        "userId"
     };
 
     QtMocHelpers::UintData qt_methods {
@@ -69,6 +71,10 @@ template <> constexpr inline auto MainWindow::qt_create_metaobjectdata<qt_meta_t
         }}),
         // Slot 'onProfileRequested'
         QtMocHelpers::SlotData<void()>(10, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'onProfileUpdated'
+        QtMocHelpers::SlotData<void(int)>(11, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::Int, 12 },
+        }}),
     };
     QtMocHelpers::UintData qt_properties {
     };
@@ -98,6 +104,7 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 3: _t->onThemeToggled(); break;
         case 4: _t->onThemeChanged((*reinterpret_cast< std::add_pointer_t<ThemeManager::Theme>>(_a[1]))); break;
         case 5: _t->onProfileRequested(); break;
+        case 6: _t->onProfileUpdated((*reinterpret_cast< std::add_pointer_t<int>>(_a[1]))); break;
         default: ;
         }
     }
@@ -126,14 +133,14 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 6)
+        if (_id < 7)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 6;
+        _id -= 7;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 6)
+        if (_id < 7)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 6;
+        _id -= 7;
     }
     return _id;
 }

@@ -16,6 +16,9 @@ public:
     explicit ProfilePanel(int userId, QWidget *parent = nullptr);
     void loadUserData();
 
+signals:
+    void profileUpdated(int userId);
+
 private slots:
     void onSelectPhoto();
     void onEditProfile();

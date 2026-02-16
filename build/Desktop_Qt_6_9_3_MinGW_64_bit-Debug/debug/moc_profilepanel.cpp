@@ -40,8 +40,10 @@ template <> constexpr inline auto ProfilePanel::qt_create_metaobjectdata<qt_meta
     namespace QMC = QtMocConstants;
     QtMocHelpers::StringRefStorage qt_stringData {
         "ProfilePanel",
-        "onSelectPhoto",
+        "profileUpdated",
         "",
+        "userId",
+        "onSelectPhoto",
         "onEditProfile",
         "onSaveProfile",
         "onCancelEdit",
@@ -50,18 +52,22 @@ template <> constexpr inline auto ProfilePanel::qt_create_metaobjectdata<qt_meta
     };
 
     QtMocHelpers::UintData qt_methods {
+        // Signal 'profileUpdated'
+        QtMocHelpers::SignalData<void(int)>(1, 2, QMC::AccessPublic, QMetaType::Void, {{
+            { QMetaType::Int, 3 },
+        }}),
         // Slot 'onSelectPhoto'
-        QtMocHelpers::SlotData<void()>(1, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'onEditProfile'
-        QtMocHelpers::SlotData<void()>(3, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'onSaveProfile'
         QtMocHelpers::SlotData<void()>(4, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'onCancelEdit'
+        // Slot 'onEditProfile'
         QtMocHelpers::SlotData<void()>(5, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'onChangePassword'
+        // Slot 'onSaveProfile'
         QtMocHelpers::SlotData<void()>(6, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'displayPhotoPreview'
+        // Slot 'onCancelEdit'
         QtMocHelpers::SlotData<void()>(7, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'onChangePassword'
+        QtMocHelpers::SlotData<void()>(8, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'displayPhotoPreview'
+        QtMocHelpers::SlotData<void()>(9, 2, QMC::AccessPrivate, QMetaType::Void),
     };
     QtMocHelpers::UintData qt_properties {
     };
@@ -85,16 +91,20 @@ void ProfilePanel::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id
     auto *_t = static_cast<ProfilePanel *>(_o);
     if (_c == QMetaObject::InvokeMetaMethod) {
         switch (_id) {
-        case 0: _t->onSelectPhoto(); break;
-        case 1: _t->onEditProfile(); break;
-        case 2: _t->onSaveProfile(); break;
-        case 3: _t->onCancelEdit(); break;
-        case 4: _t->onChangePassword(); break;
-        case 5: _t->displayPhotoPreview(); break;
+        case 0: _t->profileUpdated((*reinterpret_cast< std::add_pointer_t<int>>(_a[1]))); break;
+        case 1: _t->onSelectPhoto(); break;
+        case 2: _t->onEditProfile(); break;
+        case 3: _t->onSaveProfile(); break;
+        case 4: _t->onCancelEdit(); break;
+        case 5: _t->onChangePassword(); break;
+        case 6: _t->displayPhotoPreview(); break;
         default: ;
         }
     }
-    (void)_a;
+    if (_c == QMetaObject::IndexOfMethod) {
+        if (QtMocHelpers::indexOfMethod<void (ProfilePanel::*)(int )>(_a, &ProfilePanel::profileUpdated, 0))
+            return;
+    }
 }
 
 const QMetaObject *ProfilePanel::metaObject() const
@@ -116,15 +126,21 @@ int ProfilePanel::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 6)
+        if (_id < 7)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 6;
+        _id -= 7;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 6)
+        if (_id < 7)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 6;
+        _id -= 7;
     }
     return _id;
+}
+
+// SIGNAL 0
+void ProfilePanel::profileUpdated(int _t1)
+{
+    QMetaObject::activate<void>(this, &staticMetaObject, 0, nullptr, _t1);
 }
 QT_WARNING_POP

@@ -222,43 +222,32 @@ void DashboardPage::setupAdminDashboard()
     cardsWidget->setLayout(cardsLayout);
     mainLayout->addWidget(cardsWidget);
 
-    // Charts Tabs
-    QTabWidget *tabWidget = new QTabWidget(this);
-    tabWidget->setMinimumHeight(650);
-    tabWidget->setStyleSheet(
-        "QTabWidget::pane { border: 1px solid #334155; }"
-        "QTabBar::tab { "
-        "   background: #1e293b; "
-        "   color: #f1f5f9; "
-        "   padding: 10px 20px; "
-        "   border: 1px solid #334155; "
-        "   margin-right: 2px;"
-        "}"
-        "QTabBar::tab:selected { background: #334155; }"
-    );
+    // Charts Grid Layout
+    QGridLayout *chartsGridLayout = new QGridLayout();
+    chartsGridLayout->setSpacing(24);
     
-    // Create chart widgets
+    // Create chart widgets in grid (2 columns)
     chartsWidget = new ChartsWidget(this);
-    chartsWidget->setMinimumHeight(600);
+    chartsWidget->setMinimumHeight(400);
     chartsWidget->showSalesMonthlyChart();
-    tabWidget->addTab(chartsWidget, "Ventes Mensuelles");
+    chartsGridLayout->addWidget(chartsWidget, 0, 0);
     
     ChartsWidget *productsChart = new ChartsWidget(this);
-    productsChart->setMinimumHeight(600);
+    productsChart->setMinimumHeight(400);
     productsChart->showTopProductsChart();
-    tabWidget->addTab(productsChart, "Top Produits");
+    chartsGridLayout->addWidget(productsChart, 0, 1);
     
     ChartsWidget *paymentChart = new ChartsWidget(this);
-    paymentChart->setMinimumHeight(600);
+    paymentChart->setMinimumHeight(400);
     paymentChart->showPaymentStatusChart();
-    tabWidget->addTab(paymentChart, "Statut Commandes");
+    chartsGridLayout->addWidget(paymentChart, 1, 0);
     
     ChartsWidget *vendorChart = new ChartsWidget(this);
-    vendorChart->setMinimumHeight(600);
+    vendorChart->setMinimumHeight(400);
     vendorChart->showRevenueByVendorChart();
-    tabWidget->addTab(vendorChart, "Revenus Vendeurs");
+    chartsGridLayout->addWidget(vendorChart, 1, 1);
     
-    mainLayout->addWidget(tabWidget, 1);
+    mainLayout->addLayout(chartsGridLayout, 1);
     
     // Set container in scroll area and add to frame
     scrollArea->setWidget(container);
@@ -337,43 +326,32 @@ void DashboardPage::setupVendorDashboard()
     cardsWidget->setLayout(cardsLayout);
     mainLayout->addWidget(cardsWidget);
 
-    // Charts Tabs
-    QTabWidget *tabWidget = new QTabWidget(this);
-    tabWidget->setMinimumHeight(650);
-    tabWidget->setStyleSheet(
-        "QTabWidget::pane { border: 1px solid #334155; }"
-        "QTabBar::tab { "
-        "   background: #1e293b; "
-        "   color: #f1f5f9; "
-        "   padding: 10px 20px; "
-        "   border: 1px solid #334155; "
-        "   margin-right: 2px;"
-        "}"
-        "QTabBar::tab:selected { background: #334155; }"
-    );
+    // Charts Grid Layout
+    QGridLayout *chartsGridLayout = new QGridLayout();
+    chartsGridLayout->setSpacing(24);
     
-    // Create chart widgets for vendor
+    // Create chart widgets for vendor in grid (2 columns)
     chartsWidget = new ChartsWidget(this);
-    chartsWidget->setMinimumHeight(600);
+    chartsWidget->setMinimumHeight(400);
     chartsWidget->showVendorSalesChart(currentUserId);
-    tabWidget->addTab(chartsWidget, "Mes Ventes");
+    chartsGridLayout->addWidget(chartsWidget, 0, 0);
     
     ChartsWidget *productsChart = new ChartsWidget(this);
-    productsChart->setMinimumHeight(600);
+    productsChart->setMinimumHeight(400);
     productsChart->showVendorProductsChart(currentUserId);
-    tabWidget->addTab(productsChart, "Produits Populaires");
+    chartsGridLayout->addWidget(productsChart, 0, 1);
     
     ChartsWidget *clientsChart = new ChartsWidget(this);
-    clientsChart->setMinimumHeight(600);
+    clientsChart->setMinimumHeight(400);
     clientsChart->showVendorClientsChart(currentUserId);
-    tabWidget->addTab(clientsChart, "Fidélité Clients");
+    chartsGridLayout->addWidget(clientsChart, 1, 0);
     
     ChartsWidget *paymentChart = new ChartsWidget(this);
-    paymentChart->setMinimumHeight(600);
+    paymentChart->setMinimumHeight(400);
     paymentChart->showVendorPaymentChart(currentUserId);
-    tabWidget->addTab(paymentChart, "Statut Ventes");
+    chartsGridLayout->addWidget(paymentChart, 1, 1);
     
-    mainLayout->addWidget(tabWidget, 1);
+    mainLayout->addLayout(chartsGridLayout, 1);
     
     // Set container in scroll area and add to frame
     scrollArea->setWidget(container);
@@ -474,4 +452,14 @@ QWidget* DashboardPage::createChartPlaceholder()
     chartFrame->setMinimumHeight(520);
     
     return chartFrame;
+}
+
+void DashboardPage::refreshDashboard()
+{
+    setUserRole(userRole, currentUserId);
+}
+
+void DashboardPage::onDataChanged()
+{
+    refreshDashboard();
 }

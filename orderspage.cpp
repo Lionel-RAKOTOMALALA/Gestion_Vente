@@ -1,5 +1,7 @@
 #include "orderspage.h"
 #include "orderdialog.h"
+#include "stockmovementpage.h"
+#include "dashboardpage.h"
 #include "orderdetailsdialog.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -14,14 +16,16 @@
 #include "thememanager.h"
 #include "receiptgenerator.h"
 
-OrdersPage::OrdersPage(const QString &userRole, int userId, QWidget *parent) : 
+OrdersPage::OrdersPage(const QString &userRole, int userId, QWidget *parent, StockMovementPage *stockPage, DashboardPage *dashPage) : 
     QFrame(parent), 
     userRole(userRole), 
     userId(userId),
     currentPage(1),
     itemsPerPage(5),
     totalItems(0),
-    totalPages(1)
+    totalPages(1),
+    stockMovementPage(stockPage),
+    dashboardPage(dashPage)
 {
     setObjectName("ordersPage");
     setupDatabase();
