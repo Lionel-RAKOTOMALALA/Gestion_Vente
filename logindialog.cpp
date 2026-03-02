@@ -108,7 +108,7 @@ void LoginDialog::setupUI()
         "   color: #64748b;"
         "}"
     );
-    emailEdit->setText("rakotomalalalionel32@gmail.com");
+    emailEdit->setText("admin@example.com");
     leftLayout->addWidget(emailEdit);
 
     // Password input
@@ -143,7 +143,7 @@ void LoginDialog::setupUI()
         "   color: #64748b;"
         "}"
     );
-    passwordEdit->setText("lionel3208");
+    passwordEdit->setText("admin123");
     leftLayout->addWidget(passwordEdit);
 
     // Forgot password link
