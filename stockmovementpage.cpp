@@ -136,7 +136,7 @@ void StockMovementPage::setupUI()
     card1->setObjectName("statCard");
     card1->setStyleSheet(QString(
         "QFrame#statCard {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #10b981, stop:1 #059669);"
+        "   background: #10b981;"
         "   border-radius: 14px;"
         "   padding: 24px;"
         "}"
@@ -155,7 +155,7 @@ void StockMovementPage::setupUI()
     card2->setObjectName("statCard");
     card2->setStyleSheet(QString(
         "QFrame#statCard {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #3b82f6, stop:1 #1d4ed8);"
+        "   background: #3b82f6;"
         "   border-radius: 14px;"
         "   padding: 24px;"
         "}"
@@ -174,7 +174,7 @@ void StockMovementPage::setupUI()
     card3->setObjectName("statCard");
     card3->setStyleSheet(QString(
         "QFrame#statCard {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #ef4444, stop:1 #dc2626);"
+        "   background: #ef4444;"
         "   border-radius: 14px;"
         "   padding: 24px;"
         "}"

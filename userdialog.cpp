@@ -53,7 +53,7 @@ void UserDialog::setupUI()
     txtPassword->setMinimumHeight(40);
     
     cboRole = new QComboBox(this);
-    cboRole->addItems({"ADMIN", "VENDEUR", "CAISSIER"});
+    cboRole->addItems({"ADMIN", "VENDEUR"});
     cboRole->setMinimumHeight(40);
     
     chkActif = new QCheckBox("Compte actif", this);
@@ -161,7 +161,7 @@ void UserDialog::setupUI()
     btnSave->setMinimumHeight(45);
     btnSave->setStyleSheet(
         "QPushButton {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #10b981, stop:1 #059669);"
+        "   background: #10b981;"
         "   color: white;"
         "   border: none;"
         "   border-radius: 6px;"
@@ -171,7 +171,7 @@ void UserDialog::setupUI()
         "   outline: none;"
         "}"
         "QPushButton:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #059669, stop:1 #047857);"
+        "   background: #059669;"
         "}"
         "QPushButton:pressed {"
         "   background: #047857;"

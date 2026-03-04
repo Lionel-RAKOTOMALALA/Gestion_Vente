@@ -191,8 +191,7 @@ void OrderDetailsDialog::setupUI()
     generatePdfBtn->setCursor(Qt::PointingHandCursor);
     generatePdfBtn->setStyleSheet(
         "QPushButton {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #10b981, stop:1 #059669);"
+        "   background: #10b981;"
         "   color: white;"
         "   border: none;"
         "   border-radius: 8px;"
@@ -200,12 +199,10 @@ void OrderDetailsDialog::setupUI()
         "   font-size: 13px;"
         "}"
         "QPushButton:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #059669, stop:1 #047857);"
+        "   background: #059669;"
         "}"
         "QPushButton:pressed {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #047857, stop:1 #065f46);"
+        "   background: #047857;"
         "}"
     );
     connect(generatePdfBtn, &QPushButton::clicked, this, &OrderDetailsDialog::onGeneratePdf);
@@ -216,8 +213,7 @@ void OrderDetailsDialog::setupUI()
     notifyBtn->setCursor(Qt::PointingHandCursor);
     notifyBtn->setStyleSheet(
         "QPushButton {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #f59e0b, stop:1 #d97706);"
+        "   background: #f59e0b;"
         "   color: white;"
         "   border: none;"
         "   border-radius: 8px;"
@@ -225,12 +221,10 @@ void OrderDetailsDialog::setupUI()
         "   font-size: 13px;"
         "}"
         "QPushButton:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #d97706, stop:1 #b45309);"
+        "   background: #d97706;"
         "}"
         "QPushButton:pressed {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #b45309, stop:1 #92400e);"
+        "   background: #b45309;"
         "}"
     );
     connect(notifyBtn, &QPushButton::clicked, this, &OrderDetailsDialog::onNotifyClient);

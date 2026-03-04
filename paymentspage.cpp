@@ -32,8 +32,7 @@ void PaymentsPage::setupUI()
     QHBoxLayout *headerLayout = new QHBoxLayout();
     QLabel *icon = new QLabel(this);
     icon->setStyleSheet(
-        "background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "stop:0 #06b6d4, stop:1 #0891b2);"
+        "background: #06b6d4;"
         "border-radius: 14px;"
         "min-width: 52px; max-width: 52px;"
         "min-height: 52px; max-height: 52px;"

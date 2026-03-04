@@ -176,8 +176,7 @@ void LoginDialog::setupUI()
     loginButton->setCursor(Qt::PointingHandCursor);
     loginButton->setStyleSheet(
         "QPushButton {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #3b82f6, stop:1 #2563eb);"
+        "   background: #3b82f6;"
         "   color: white;"
         "   border: none;"
         "   border-radius: 8px;"
@@ -185,12 +184,10 @@ void LoginDialog::setupUI()
         "   font-weight: 600;"
         "}"
         "QPushButton:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #2563eb, stop:1 #1d4ed8);"
+        "   background: #2563eb;"
         "}"
         "QPushButton:pressed {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #1d4ed8, stop:1 #1e40af);"
+        "   background: #1d4ed8;"
         "}"
     );
     connect(loginButton, &QPushButton::clicked, this, &LoginDialog::onLoginClicked);

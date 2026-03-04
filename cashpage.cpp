@@ -37,8 +37,7 @@ void CashPage::setupUI()
     QHBoxLayout *headerLayout = new QHBoxLayout();
     QLabel *icon = new QLabel(this);
     icon->setStyleSheet(
-        "background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "stop:0 #f59e0b, stop:1 #d97706);"
+        "background: #f59e0b;"
         "border-radius: 14px;"
         "min-width: 52px; max-width: 52px;"
         "min-height: 52px; max-height: 52px;"
@@ -67,7 +66,7 @@ void CashPage::setupUI()
     card1->setObjectName("statCard");
     card1->setStyleSheet(QString(
         "QFrame#statCard {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #10b981, stop:1 #059669);"
+        "   background: #10b981;"
         "   border-radius: 14px;"
         "   padding: 24px;"
         "}"
@@ -86,7 +85,7 @@ void CashPage::setupUI()
     card2->setObjectName("statCard");
     card2->setStyleSheet(QString(
         "QFrame#statCard {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #3b82f6, stop:1 #1d4ed8);"
+        "   background: #3b82f6;"
         "   border-radius: 14px;"
         "   padding: 24px;"
         "}"
@@ -105,7 +104,7 @@ void CashPage::setupUI()
     card3->setObjectName("statCard");
     card3->setStyleSheet(QString(
         "QFrame#statCard {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #8b5cf6, stop:1 #6d28d9);"
+        "   background: #8b5cf6;"
         "   border-radius: 14px;"
         "   padding: 24px;"
         "}"

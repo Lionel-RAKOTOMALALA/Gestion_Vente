@@ -49,8 +49,7 @@ void OrdersPage::setupUI()
     QHBoxLayout *headerLayout = new QHBoxLayout();
     QLabel *icon = new QLabel(this);
     icon->setStyleSheet(
-        "background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "stop:0 #06b6d4, stop:1 #0891b2);"
+        "background: #06b6d4;"
         "border-radius: 14px;"
         "min-width: 52px; max-width: 52px;"
         "min-height: 52px; max-height: 52px;"
@@ -269,8 +268,7 @@ void OrdersPage::setupUI()
         "   padding: 0px;"
         "}"
         "QPushButton:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #667eea, stop:1 #764ba2);"
+        "   background: #6d6d9f;"
         "   color: white;"
         "   border-color: transparent;"
         "}"
@@ -470,8 +468,7 @@ void OrdersPage::loadOrders()
             viewBtn->setToolTip(produits);
             viewBtn->setStyleSheet(
                 "QPushButton {"
-                "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-                "   stop:0 #06b6d4, stop:1 #0891b2);"
+                "   background: #06b6d4;"
                 "   color: white;"
                 "   border: none;"
                 "   border-radius: 4px;"
@@ -480,12 +477,10 @@ void OrdersPage::loadOrders()
                 "   padding: 4px 8px;"
                 "}"
                 "QPushButton:hover {"
-                "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-                "   stop:0 #00d4e8, stop:1 #06b6d4);"
+                "   background: #0891b2;"
                 "}"
                 "QPushButton:pressed {"
-                "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-                "   stop:0 #0891b2, stop:1 #006b7e);"
+                "   background: #006b7e;"
                 "}"
             );
             
@@ -503,8 +498,7 @@ void OrdersPage::loadOrders()
                 notifyBtn->setCursor(Qt::PointingHandCursor);
                 notifyBtn->setStyleSheet(
                     "QPushButton {"
-                    "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-                    "   stop:0 #f59e0b, stop:1 #d97706);"
+                    "   background: #f59e0b;"
                     "   color: white;"
                     "   border: none;"
                     "   border-radius: 4px;"
@@ -513,12 +507,10 @@ void OrdersPage::loadOrders()
                     "   padding: 4px 8px;"
                     "}"
                     "QPushButton:hover {"
-                    "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-                    "   stop:0 #d97706, stop:1 #b45309);"
+                    "   background: #d97706;"
                     "}"
                     "QPushButton:pressed {"
-                    "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-                    "   stop:0 #b45309, stop:1 #92400e);"
+                    "   background: #b45309;"
                     "}"
                 );
                 
@@ -544,8 +536,7 @@ void OrdersPage::loadOrders()
             editBtn->setCursor(Qt::PointingHandCursor);
             editBtn->setStyleSheet(
                 "QPushButton {"
-                "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-                "   stop:0 #667eea, stop:1 #764ba2);"
+                "   background: #667eea;"
                 "   color: white;"
                 "   border: none;"
                 "   border-radius: 4px;"
@@ -554,12 +545,10 @@ void OrdersPage::loadOrders()
                 "   padding: 0px;"
                 "}"
                 "QPushButton:hover {"
-                "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-                "   stop:0 #5568d3, stop:1 #6a3a8a);"
+                "   background: #5568d3;"
                 "}"
                 "QPushButton:pressed {"
-                "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-                "   stop:0 #4556b8, stop:1 #5a2a7a);"
+                "   background: #4556b8;"
                 "}"
             );
 
@@ -568,8 +557,7 @@ void OrdersPage::loadOrders()
             deleteBtn->setCursor(Qt::PointingHandCursor);
             deleteBtn->setStyleSheet(
                 "QPushButton {"
-                "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-                "   stop:0 #f56565, stop:1 #e53e3e);"
+                "   background: #f56565;"
                 "   color: white;"
                 "   border: none;"
                 "   border-radius: 4px;"
@@ -578,12 +566,10 @@ void OrdersPage::loadOrders()
                 "   padding: 0px;"
                 "}"
                 "QPushButton:hover {"
-                "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-                "   stop:0 #e53e3e, stop:1 #c53030);"
+                "   background: #e53e3e;"
                 "}"
                 "QPushButton:pressed {"
-                "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-                "   stop:0 #c53030, stop:1 #742a2a);"
+                "   background: #c53030;"
                 "}"
             );
 

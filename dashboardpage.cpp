@@ -228,22 +228,22 @@ void DashboardPage::setupAdminDashboard()
     
     // Create chart widgets in grid (2 columns)
     chartsWidget = new ChartsWidget(this);
-    chartsWidget->setMinimumHeight(400);
+    chartsWidget->setMinimumHeight(250);
     chartsWidget->showSalesMonthlyChart();
     chartsGridLayout->addWidget(chartsWidget, 0, 0);
     
     ChartsWidget *productsChart = new ChartsWidget(this);
-    productsChart->setMinimumHeight(400);
+    productsChart->setMinimumHeight(250);
     productsChart->showTopProductsChart();
     chartsGridLayout->addWidget(productsChart, 0, 1);
     
     ChartsWidget *paymentChart = new ChartsWidget(this);
-    paymentChart->setMinimumHeight(400);
+    paymentChart->setMinimumHeight(250);
     paymentChart->showPaymentStatusChart();
     chartsGridLayout->addWidget(paymentChart, 1, 0);
     
     ChartsWidget *vendorChart = new ChartsWidget(this);
-    vendorChart->setMinimumHeight(400);
+    vendorChart->setMinimumHeight(250);
     vendorChart->showRevenueByVendorChart();
     chartsGridLayout->addWidget(vendorChart, 1, 1);
     

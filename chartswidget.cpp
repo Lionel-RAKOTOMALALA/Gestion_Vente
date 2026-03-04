@@ -42,7 +42,7 @@ QChartView* ChartsWidget::createChartView()
     QChartView* chartView = new QChartView(this);
     chartView->setRenderHint(QPainter::Antialiasing);
     chartView->setBackgroundBrush(QBrush(QColor(15, 23, 42)));
-    chartView->setMinimumHeight(550);
+    chartView->setMinimumHeight(280);
     
     return chartView;
 }

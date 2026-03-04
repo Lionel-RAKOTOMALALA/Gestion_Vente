@@ -282,7 +282,7 @@ void OrderDialog::setupOrderSummary()
     validateBtn->setCursor(Qt::PointingHandCursor);
     validateBtn->setStyleSheet(
         "QPushButton {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #10b981, stop:1 #059669);"
+        "   background: #10b981;"
         "   color: white;"
         "   border: none;"
         "   border-radius: 10px;"
@@ -291,7 +291,7 @@ void OrderDialog::setupOrderSummary()
         "   padding: 8px 24px;"
         "}"
         "QPushButton:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #059669, stop:1 #047857);"
+        "   background: #059669;"
         "}"
         "QPushButton:pressed {"
         "   background: #047857;"
@@ -406,7 +406,7 @@ void OrderDialog::setupPaymentForm()
     confirmPaymentBtn->setCursor(Qt::PointingHandCursor);
     confirmPaymentBtn->setStyleSheet(
         "QPushButton {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #10b981, stop:1 #059669);"
+        "   background: #10b981;"
         "   color: white;"
         "   border: none;"
         "   border-radius: 10px;"
@@ -415,7 +415,7 @@ void OrderDialog::setupPaymentForm()
         "   padding: 8px 30px;"
         "}"
         "QPushButton:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #059669, stop:1 #047857);"
+        "   background: #059669;"
         "}"
         "QPushButton:pressed {"
         "   background: #047857;"
@@ -569,8 +569,7 @@ void OrderDialog::updateTable()
         removeBtn->setCursor(Qt::PointingHandCursor);
         removeBtn->setStyleSheet(
             "QPushButton {"
-            "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-            "   stop:0 #f56565, stop:1 #e53e3e);"
+            "   background: #f56565;"
             "   color: white;"
             "   border: none;"
             "   font-size: 14px;"
@@ -579,12 +578,10 @@ void OrderDialog::updateTable()
             "   padding: 0px;"
             "}"
             "QPushButton:hover {"
-            "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-            "   stop:0 #e53e3e, stop:1 #c53030);"
+            "   background: #e53e3e;"
             "}"
             "QPushButton:pressed {"
-            "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-            "   stop:0 #c53030, stop:1 #742a2a);"
+            "   background: #c53030;"
             "}"
         );
         connect(removeBtn, &QPushButton::clicked, [this, row]() {

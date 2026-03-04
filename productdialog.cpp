@@ -169,7 +169,7 @@ void ProductDialog::setupUI()
     btnSave->setMinimumHeight(45);
     btnSave->setStyleSheet(
         "QPushButton {"
-        "   background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #10b981, stop: 1 #059669);"
+        "   background: #10b981;"
         "   color: white;"
         "   border: none;"
         "   border-radius: 6px;"
@@ -178,7 +178,7 @@ void ProductDialog::setupUI()
         "   font-weight: bold;"
         "}"
         "QPushButton:hover {"
-        "   background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #059669, stop: 1 #047857);"
+        "   background: #059669;"
         "}"
         "QPushButton:pressed {"
         "   background: #047857;"

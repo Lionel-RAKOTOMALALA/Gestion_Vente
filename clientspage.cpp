@@ -42,8 +42,7 @@ void ClientsPage::setupUI()
     QHBoxLayout *headerLayout = new QHBoxLayout();
     QLabel *icon = new QLabel(this);
     icon->setStyleSheet(
-        "background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "stop:0 #667eea, stop:1 #764ba2);"
+        "background: #667eea;"
         "border-radius: 12px;"
         "min-width: 48px; max-width: 48px;"
         "min-height: 48px; max-height: 48px;"
@@ -138,8 +137,7 @@ void ClientsPage::setupUI()
         "   font-weight: bold;"
         "}"
         "QPushButton:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #667eea, stop:1 #764ba2);"
+        "   background: #6d6d9f;"
         "   color: white;"
         "   border-color: transparent;"
         "}"
@@ -165,8 +163,7 @@ void ClientsPage::setupUI()
         "   padding: 0px;"
         "}"
         "QPushButton:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #667eea, stop:1 #764ba2);"
+        "   background: #6d6d9f;"
         "   color: white;"
         "   border-color: transparent;"
         "}"
@@ -205,8 +202,7 @@ void ClientsPage::setupUI()
         "   padding: 0px;"
         "}"
         "QPushButton:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #667eea, stop:1 #764ba2);"
+        "   background: #6d6d9f;"
         "   color: white;"
         "   border-color: transparent;"
         "}"
@@ -276,8 +272,7 @@ QWidget* ClientsPage::createActionButtons(int clientId)
     editBtn->setToolTip("Modifier le client");
     editBtn->setStyleSheet(
         "QPushButton {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #667eea, stop:1 #764ba2);"
+        "   background: #667eea;"
         "   color: white;"
         "   border: none;"
         "   border-radius: 4px;"
@@ -286,12 +281,10 @@ QWidget* ClientsPage::createActionButtons(int clientId)
         "   padding: 0px;"
         "}"
         "QPushButton:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #5568d3, stop:1 #6a3a8a);"
+        "   background: #5568d3;"
         "}"
         "QPushButton:pressed {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #4556b8, stop:1 #5a2a7a);"
+        "   background: #4556b8;"
         "}"
     );
     connect(editBtn, &QPushButton::clicked, this, [this, clientId]() { onEditClient(clientId); });
@@ -302,8 +295,7 @@ QWidget* ClientsPage::createActionButtons(int clientId)
     deleteBtn->setToolTip("Supprimer le client");
     deleteBtn->setStyleSheet(
         "QPushButton {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #f56565, stop:1 #e53e3e);"
+        "   background: #f56565;"
         "   color: white;"
         "   border: none;"
         "   border-radius: 4px;"
@@ -312,12 +304,10 @@ QWidget* ClientsPage::createActionButtons(int clientId)
         "   padding: 0px;"
         "}"
         "QPushButton:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #e53e3e, stop:1 #c53030);"
+        "   background: #e53e3e;"
         "}"
         "QPushButton:pressed {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #c53030, stop:1 #742a2a);"
+        "   background: #c53030;"
         "}"
     );
     connect(deleteBtn, &QPushButton::clicked, this, [this, clientId]() { onDeleteClient(clientId); });

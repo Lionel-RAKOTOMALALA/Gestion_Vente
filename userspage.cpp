@@ -43,8 +43,7 @@ void UsersPage::setupUI()
     QHBoxLayout *headerLayout = new QHBoxLayout();
     QLabel *icon = new QLabel(this);
     icon->setStyleSheet(
-        "background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "stop:0 #667eea, stop:1 #764ba2);"
+        "background: #6d6d9f;"
         "border-radius: 12px;"
         "min-width: 48px; max-width: 48px;"
         "min-height: 48px; max-height: 48px;"
@@ -129,8 +128,7 @@ void UsersPage::setupUI()
     btnAdd->setCursor(Qt::PointingHandCursor);
     btnAdd->setStyleSheet(
         "QPushButton {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #3b82f6, stop:1 #2563eb);"
+        "   background: #3b82f6;"
         "   color: white;"
         "   border: none;"
         "   border-radius: 12px;"
@@ -139,8 +137,7 @@ void UsersPage::setupUI()
         "   font-weight: 600;"
         "}"
         "QPushButton:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #2563eb, stop:1 #1d4ed8);"
+        "   background: #2563eb;"
         "}"
         "QPushButton:pressed {"
         "   background: #1d4ed8;"
@@ -153,8 +150,7 @@ void UsersPage::setupUI()
     btnRefresh->setCursor(Qt::PointingHandCursor);
     btnRefresh->setStyleSheet(
         "QPushButton {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #3b82f6, stop:1 #2563eb);"
+        "   background: #3b82f6;"
         "   color: white;"
         "   border: none;"
         "   border-radius: 12px;"
@@ -163,8 +159,7 @@ void UsersPage::setupUI()
         "   font-weight: 600;"
         "}"
         "QPushButton:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #2563eb, stop:1 #1d4ed8);"
+        "   background: #2563eb;"
         "}"
         "QPushButton:pressed {"
         "   background: #1d4ed8;"
@@ -240,8 +235,7 @@ void UsersPage::setupUI()
         "   font-weight: bold;"
         "}"
         "QPushButton:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #667eea, stop:1 #764ba2);"
+        "   background: #6d6d9f;"
         "   color: white;"
         "   border-color: transparent;"
         "}"
@@ -359,8 +353,7 @@ QWidget* UsersPage::createActionButtons(int userId)
     editBtn->setToolTip("Modifier l'utilisateur");
     editBtn->setStyleSheet(
         "QPushButton {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #667eea, stop:1 #764ba2);"
+        "   background: #667eea;"
         "   color: white;"
         "   border: none;"
         "   border-radius: 4px;"
@@ -369,12 +362,10 @@ QWidget* UsersPage::createActionButtons(int userId)
         "   padding: 0px;"
         "}"
         "QPushButton:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #5568d3, stop:1 #6a3a8a);"
+        "   background: #5568d3;"
         "}"
         "QPushButton:pressed {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #4556b8, stop:1 #5a2a7a);"
+        "   background: #4556b8;"
         "}"
     );
     connect(editBtn, &QPushButton::clicked, this, [this, userId]() { onEditUser(userId); });
@@ -385,8 +376,7 @@ QWidget* UsersPage::createActionButtons(int userId)
     deleteBtn->setToolTip("Supprimer l'utilisateur");
     deleteBtn->setStyleSheet(
         "QPushButton {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #f56565, stop:1 #e53e3e);"
+        "   background: #f56565;"
         "   color: white;"
         "   border: none;"
         "   border-radius: 4px;"
@@ -395,12 +385,10 @@ QWidget* UsersPage::createActionButtons(int userId)
         "   padding: 0px;"
         "}"
         "QPushButton:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #e53e3e, stop:1 #c53030);"
+        "   background: #e53e3e;"
         "}"
         "QPushButton:pressed {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
-        "   stop:0 #c53030, stop:1 #742a2a);"
+        "   background: #c53030;"
         "}"
     );
     connect(deleteBtn, &QPushButton::clicked, this, [this, userId]() { onDeleteUser(userId); });

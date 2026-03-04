@@ -35,7 +35,7 @@ void PaymentDialog::setupUI()
     
     totalLabel = new QLabel(QString::number(totalAmount, 'f', 2) + " Ar", this);
     totalLabel->setStyleSheet(
-        "background: linear-gradient(135deg, #10b981 0%, #059669 100%);"
+        "background: #10b981;"
         "color: white;"
         "padding: 15px;"
         "border-radius: 8px;"
@@ -130,7 +130,7 @@ void PaymentDialog::setupUI()
     confirmBtn->setMinimumHeight(45);
     confirmBtn->setStyleSheet(
         "QPushButton {"
-        "   background: linear-gradient(135deg, #10b981 0%, #059669 100%);"
+        "   background: #10b981;"
         "   color: white;"
         "   border: none;"
         "   border-radius: 6px;"
@@ -138,10 +138,10 @@ void PaymentDialog::setupUI()
         "   font-size: 14px;"
         "}"
         "QPushButton:hover {"
-        "   background: linear-gradient(135deg, #059669 0%, #047857 100%);"
+        "   background: #059669;"
         "}"
         "QPushButton:pressed {"
-        "   background: linear-gradient(135deg, #047857 0%, #065f46 100%);"
+        "   background: #047857;"
         "}"
     );
     connect(confirmBtn, &QPushButton::clicked, this, &PaymentDialog::onConfirm);

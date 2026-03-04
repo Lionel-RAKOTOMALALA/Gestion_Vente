@@ -65,7 +65,7 @@ Sidebar::Sidebar(const QString &userRole, QWidget *parent) : QWidget(parent)
         "color: white; "
         "}"
         "#logoutButton { "
-        "background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #ef4444, stop:1 #dc2626); "
+        "background: #ef4444; "
         "color: white; "
         "border: none; "
         "border-radius: 8px; "
@@ -74,7 +74,7 @@ Sidebar::Sidebar(const QString &userRole, QWidget *parent) : QWidget(parent)
         "font-size: 13px; "
         "}"
         "#logoutButton:hover { "
-        "background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #dc2626, stop:1 #991b1b); "
+        "background: #dc2626; "
         "}"
     ).arg(
         ThemeManager::instance().backgroundColor().name(),
@@ -129,8 +129,7 @@ Sidebar::Sidebar(const QString &userRole, QWidget *parent) : QWidget(parent)
     logoutBtn->setCursor(Qt::PointingHandCursor);
     logoutBtn->setStyleSheet(
         "QPushButton {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, "
-        "   stop:0 #ef4444, stop:1 #dc2626);"
+        "   background: #ef4444;"
         "   color: white;"
         "   border: none;"
         "   border-radius: 12px;"
@@ -140,8 +139,7 @@ Sidebar::Sidebar(const QString &userRole, QWidget *parent) : QWidget(parent)
         "   margin: 8px 0;"
         "}"
         "QPushButton:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, "
-        "   stop:0 #dc2626, stop:1 #b91c1c);"
+        "   background: #dc2626;"
         "}"
         "QPushButton:pressed {"
         "   background: #b91c1c;"
@@ -203,7 +201,7 @@ void Sidebar::updateTheme()
         "   color: white;"
         "}"
         "#logoutButton {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 %6, stop:1 %7);"
+        "   background: %6;"
         "   color: white;"
         "   border: none;"
         "   border-radius: 8px;"
@@ -212,7 +210,7 @@ void Sidebar::updateTheme()
         "   font-size: 13px;"
         "}"
         "#logoutButton:hover {"
-        "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 %7, stop:1 %8);"
+        "   background: %7;"
         "}"
     ).arg(
         theme.backgroundColor().name(),
