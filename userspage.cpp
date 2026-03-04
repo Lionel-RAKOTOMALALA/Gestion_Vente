@@ -28,7 +28,7 @@ void UsersPage::setupDatabase()
                "nom TEXT NOT NULL, "
                "email TEXT UNIQUE NOT NULL, "
                "mot_de_passe TEXT NOT NULL, "
-               "role TEXT CHECK(role IN ('ADMIN','VENDEUR','CAISSIER')) NOT NULL, "
+               "role TEXT CHECK(role IN ('ADMIN','VENDEUR')) NOT NULL, "
                "actif INTEGER DEFAULT 1, "
                "date_creation DATETIME DEFAULT CURRENT_TIMESTAMP, "
                "photo_profile TEXT)");
@@ -90,7 +90,7 @@ void UsersPage::setupUI()
     connect(searchInput, &QLineEdit::textChanged, this, &UsersPage::onSearchTextChanged);
 
     roleFilter = new QComboBox(this);
-    roleFilter->addItems({"Tous les roles", "ADMIN", "VENDEUR", "CAISSIER"});
+    roleFilter->addItems({"Tous les roles", "ADMIN", "VENDEUR"});
     roleFilter->setMinimumHeight(48);
     roleFilter->setMinimumWidth(200);
     roleFilter->setStyleSheet(

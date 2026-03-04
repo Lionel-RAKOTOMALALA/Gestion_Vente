@@ -142,23 +142,19 @@ void DashboardPage::setUserRole(const QString& role, int userId)
         delete oldLayout;
     }
     
-    // Setup appropriate dashboard
-    if (role == "ADMIN") {
-        setupAdminDashboard();
-    } else {
-        setupVendorDashboard();
-    }
+    // Tous les utilisateurs voient le même dashboard avec les données globales
+    setupAdminDashboard();
 }
 
 void DashboardPage::setupUI()
 {
-    // Initial setup with VENDEUR role
-    setupVendorDashboard();
+    // Setup dashboard with global company data for all users
+    setupAdminDashboard();
 }
 
 void DashboardPage::setupAdminDashboard()
 {
-    qDebug() << "Affichage du Dashboard ADMIN";
+    qDebug() << "Affichage du Dashboard pour tous les utilisateurs";
     
     // Create scroll area
     QScrollArea *scrollArea = new QScrollArea(this);
@@ -175,7 +171,7 @@ void DashboardPage::setupAdminDashboard()
     QVBoxLayout *headerLayout = new QVBoxLayout();
     headerLayout->setSpacing(6);
     
-    QLabel *title = new QLabel("Tableau de Bord - Administration", this);
+    QLabel *title = new QLabel("Tableau de Bord - Vue Générale", this);
     title->setObjectName("titleH1");
     QFont titleFont = title->font();
     titleFont.setPointSize(36);
@@ -183,7 +179,7 @@ void DashboardPage::setupAdminDashboard()
     titleFont.setLetterSpacing(QFont::AbsoluteSpacing, 0.5);
     title->setFont(titleFont);
     
-    QLabel *subtitle = new QLabel("Vue d'ensemble complète de l'entreprise", this);
+    QLabel *subtitle = new QLabel("Données globales de l'ensemble de l'entreprise", this);
     subtitle->setObjectName("subtitle");
     ThemeManager& theme = ThemeManager::instance();
     subtitle->setStyleSheet(QString("color: %1;").arg(theme.textSecondaryColor().name()));

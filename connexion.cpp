@@ -62,7 +62,7 @@ bool Connexion::createConnection()
                           "nom TEXT NOT NULL,"
                           "email TEXT NOT NULL UNIQUE,"
                           "mot_de_passe TEXT NOT NULL,"
-                          "role TEXT NOT NULL CHECK (role IN ('ADMIN','VENDEUR','CAISSIER')),"
+                          "role TEXT NOT NULL CHECK (role IN ('ADMIN','VENDEUR')),"
                           "actif INTEGER DEFAULT 1,"
                           "date_creation DATETIME DEFAULT CURRENT_TIMESTAMP,"
                           "photo_profile TEXT"

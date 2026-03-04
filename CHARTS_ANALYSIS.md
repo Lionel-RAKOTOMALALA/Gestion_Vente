@@ -192,7 +192,7 @@ stackedWidget->addWidget(dashboardPage);
    - Colonnes: id_client, nom, prenom, telephone, email, adresse
 
 5. **USERS**
-   - Colonnes: id_user, nom, email, role (ADMIN/VENDEUR/CAISSIER)
+   - Colonnes: id_user, nom, email, role (ADMIN/VENDEUR)
 
 6. **PAIEMENTS**
    - Colonnes: id_paiement, id_commande, montant, date_paiement, statut

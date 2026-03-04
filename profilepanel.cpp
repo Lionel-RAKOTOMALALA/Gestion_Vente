@@ -283,7 +283,7 @@ void ProfilePanel::setupUI()
     txtEmailEdit->setMinimumHeight(40);
     
     cboRoleEdit = new QComboBox(this);
-    cboRoleEdit->addItems({"ADMIN", "VENDEUR", "CAISSIER"});
+    cboRoleEdit->addItems({"ADMIN", "VENDEUR"});
     cboRoleEdit->setMinimumHeight(40);
     cboRoleEdit->setEnabled(false);  // Le rôle ne peut pas être modifié ici
     
@@ -432,9 +432,6 @@ void ProfilePanel::loadUserData()
         } else if (role == "VENDEUR") {
             roleColor = "#3b82f6";
             roleDisplay = "Vendeur";
-        } else if (role == "CAISSIER") {
-            roleColor = "#f59e0b";
-            roleDisplay = "Caissier";
         }
         
         lblRoleDisplay->setText(roleDisplay);
